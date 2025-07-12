@@ -32,7 +32,7 @@ class LearnScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    minimumSize: const Size(double.infinity, 40),
+                    minimumSize: const Size(double.infinity, 80),
                   ),
                   child: Center(
                     child: Column(

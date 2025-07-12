@@ -73,89 +73,76 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final languages = _getLanguages();
     return Scaffold(
       appBar: AppBar(title: const Text('Übersicht & Sprachen')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Neue Sprache',
-                      border: OutlineInputBorder(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        labelText: 'Neue Sprache',
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _addLanguage,
-                  child: const Text('Hinzufügen'),
-                )
-              ],
-            ),
-          ),
-          const Divider(),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 3,
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _addLanguage,
+                    child: const Text('Hinzufügen'),
+                  )
+                ],
               ),
-              itemCount: languages.length,
-              itemBuilder: (context, index) {
-                final language = languages[index];
-                final isDefaultLanguage = ['Englisch', 'Spanisch', 'Thai'].contains(language);
-                
-                return GestureDetector(
-                  onLongPress: () {
-                    if (!isDefaultLanguage) {
-                      _showDeleteDialog(language);
-                    }
-                  },
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => VocScreen(language: language),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Stack(
-                      children: [
-                        Center(
-                          child: Text(
-                            language,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        if (!isDefaultLanguage)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Icon(
-                              Icons.close,
-                              size: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
             ),
-          ),
-        ],
+            const Divider(),
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 3,
+                ),
+                itemCount: languages.length,
+                itemBuilder: (context, index) {
+                  final language = languages[index];
+
+                  return GestureDetector(
+                    onLongPress: () {
+                      _showDeleteDialog(language); 
+                    },
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => VocScreen(language: language),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(double.infinity, 80),
+                      ),
+                      child: Center(
+                        child: Text(
+                          language,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
