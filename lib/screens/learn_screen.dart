@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:voc_trainer/screens/learn_mode_screen.dart';
-import 'voc_screen.dart';
 
 class LearnScreen extends StatelessWidget {
   const LearnScreen({super.key});

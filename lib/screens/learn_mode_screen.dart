@@ -1,7 +1,7 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/word.dart';
 import '../services/word_service.dart';
+import 'dart:math';
 
 class LearnModeScreen extends StatefulWidget {
   final String language;
@@ -16,6 +16,7 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
   bool showOnlyNotLearned = true;
   int currentIndex = 0;
   List<Word> learningList = [];
+  bool showTranslation = false;
 
   @override
   void initState() {
@@ -47,6 +48,8 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
     if (learningList.isEmpty) return;
     setState(() {
       currentIndex = (currentIndex + 1) % learningList.length;
+      showTranslation = false;
+      _buildLearningList();
     });
   }
 
@@ -55,6 +58,8 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
     setState(() {
       currentIndex =
           (currentIndex - 1 + learningList.length) % learningList.length;
+      showTranslation = false; // reset when skipping
+      _buildLearningList();
     });
   }
 
@@ -63,7 +68,6 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
       final word = learningList[currentIndex];
       word.learned = !word.learned;
       WordService.update(); // Speichern
-      _buildLearningList();
     });
   }
 
@@ -100,22 +104,54 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        word.word,
-                        style: const TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        word.translation,
-                        style: const TextStyle(fontSize: 24),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          final rotate = Tween(begin: 0.0, end: 1.0).animate(animation);
+                          return AnimatedBuilder(
+                            animation: rotate,
+                            child: child,
+                            builder: (context, child) {
+                              final isUnder = (child?.key != ValueKey(showTranslation));
+                              final value = isUnder ? min(rotate.value, 0.5) : rotate.value;
+                              Widget displayChild = child!;
+                              if (value > 0.5) {
+                                displayChild = Transform(
+                                  alignment: Alignment.center,
+                                  transform: Matrix4.rotationY(pi),
+                                  child: child,
+                                );
+                              }
+                              return Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(value * pi),
+                                child: displayChild,
+                              );
+                            },
+                          );
+                        },
+                        child: ElevatedButton(
+                          key: ValueKey(showTranslation),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(220, 100),
+                            textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                            elevation: 4,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              showTranslation = !showTranslation;
+                            });
+                          },
+                          child: Text(
+                            showTranslation ? word.translation : word.word,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
                       IconButton(
                         icon: Icon(
-                          word.learned
-                              ? Icons.star
-                              : Icons.star_border,
+                          word.learned ? Icons.star : Icons.star_border,
                           color: word.learned ? Colors.amber : Colors.grey,
                           size: 48,
                         ),
@@ -138,8 +174,8 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
                     onPressed: _next,
                   ),
                 ),
-              ],
-            ),
+            ],
+          ),
     );
   }
 }

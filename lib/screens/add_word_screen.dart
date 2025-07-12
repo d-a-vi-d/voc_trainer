@@ -28,6 +28,7 @@ class _AddWordScreenState extends State<AddWordScreen> {
               TextField(
                 controller: wordController,
                 decoration: const InputDecoration(labelText: 'Wort'),
+                autofocus: true,
               ),
               TextField(
                 controller: translationController,
@@ -52,6 +53,7 @@ class _AddWordScreenState extends State<AddWordScreen> {
                   ));
                   Navigator.of(context).pop();
                   setState(() {}); // optional, um Buttons neu zu rendern
+                  //_showAddWordDialog(language);
                 }
               },
               child: const Text('Speichern'),

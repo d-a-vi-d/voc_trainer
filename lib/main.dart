@@ -72,12 +72,5 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// languages löschen
-
-// learnmodescreen appbar stern entfernen
-// was macht SliverGridDelegateWithFixedCrossAxisCount
-// schneller vok eingeben
-// übersetzung nicht gleich eingeben
-// overview mit persönlichen sprachen
-// voc screen bottombar
+// übersetzung nicht gleich sichtbar
 // alles schöner machen

@@ -75,47 +75,16 @@ class _OverviewScreenState extends State<OverviewScreen> {
       appBar: AppBar(title: const Text('Übersicht & Sprachen')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        labelText: 'Neue Sprache',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _addLanguage,
-                    child: const Text('Hinzufügen'),
-                  )
-                ],
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 3,
-                ),
-                itemCount: languages.length,
-                itemBuilder: (context, index) {
-                  final language = languages[index];
-
-                  return GestureDetector(
-                    onLongPress: () {
-                      _showDeleteDialog(language); 
-                    },
+        child: Center(
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: [
+              ...languages.map((language) {
+                return SizedBox(
+                  width: MediaQuery.of(context).size.width / 2 - 24,
+                  child: GestureDetector(
+                    onLongPress: () => _showDeleteDialog(language),
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
@@ -129,20 +98,69 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(double.infinity, 80),
                       ),
-                      child: Center(
-                        child: Text(
-                          language,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                      child: Text(
+                        language,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
-                  );
-                },
+                  ),
+                );
+              }),
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 2 - 24,
+                child: ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Neue Sprache hinzufügen'),
+                          content: TextField(
+                            controller: _controller,
+                            decoration: const InputDecoration(
+                              labelText: 'Sprache',
+                            ),
+                            autofocus: true,
+                            onSubmitted: (_) {
+                              Navigator.of(context).pop();
+                              _addLanguage();
+                            },
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Abbrechen'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                _addLanguage();
+                              },
+                              child: const Text('Hinzufügen'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(double.infinity, 80),
+                    backgroundColor: Colors.green[400],
+                  ),
+                  child: const Text(
+                    '+ Sprache hinzufügen',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        )                                                
       ),
     );
   }
