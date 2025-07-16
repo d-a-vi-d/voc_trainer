@@ -4,7 +4,6 @@ import 'screens/learn_mode_screen.dart';
 import 'package:voc_trainer/services/word_service.dart';
 import 'models/word.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 
 
 void main() async{
@@ -199,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ...List.generate(
                     langList.length + (isDraggingMode && dropPreviewIndex != null ? 1 : 0),
                     (i) {
-                      // DottedBorder-Vorschau
+                      // Show DottedBorder at dropPreviewIndex
                       if (isDraggingMode && dropPreviewIndex == i) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -216,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                       }
-                      // Index anpassen, falls Vorschau eingefügt wird
+                      // Adjust index if DottedBorder is inserted
                       final realIndex = (isDraggingMode && dropPreviewIndex != null && i > dropPreviewIndex!) ? i - 1 : i;
                       if (realIndex >= langList.length) return const SizedBox.shrink();
                       final lang = langList[realIndex];
@@ -247,7 +246,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     dropPreviewIndex = null;
                                   });
                                 },
-                                // Kein child, da childWhenDragging gesetzt ist
                               )
                             : DragTarget<int>(
                                 onWillAccept: (fromIndex) {
