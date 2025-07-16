@@ -1,14 +1,57 @@
 import 'package:flutter/material.dart';
 import '../services/word_service.dart';
 import '../models/word.dart';
-import '../screens/learn_mode_screen.dart';
 
 class VocScreen extends StatefulWidget {
   final String language;
+  final VoidCallback? onChanged;
+  const VocScreen({super.key, required this.language, this.onChanged});
 
-  const VocScreen({super.key, required this.language});
+  static Future<void> showAddWordDialog(BuildContext context, String language, {VoidCallback? onWordAdded}) async {
+    final wordController = TextEditingController();
+    final translationController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Neues Wort für $language'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: wordController,
+              decoration: const InputDecoration(labelText: 'Wort'),
+            ),
+            TextField(
+              controller: translationController,
+              decoration: const InputDecoration(labelText: 'Übersetzung'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Abbrechen'),
+          ),
+          TextButton(
+            onPressed: () {
+              final word = wordController.text.trim();
+              final translation = translationController.text.trim();
+              if (word.isNotEmpty && translation.isNotEmpty) {
+                WordService.words.add(
+                  Word(word: word, translation: translation, language: language),
+                );
+                WordService.saveWords();
+                if (onWordAdded != null) onWordAdded();
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Hinzufügen'),
+          ),
+        ],
+      ),
+    );
+  }
 
-  
   @override
     State<VocScreen> createState() => _VocScreenState();
   }
@@ -22,33 +65,8 @@ class _VocScreenState extends State<VocScreen> {
     List<Word> words = WordService.getWordsForLanguage(widget.language);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lernen')),
       body: Column(
-        children: [
-          Container(
-            color: Colors.grey[200],
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  widget.language,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => LearnModeScreen(language: widget.language),
-                      ),
-                    );
-                  },
-                  child: const Text('Lernen'),
-                )
-              ],
-            ),
-          ),
+        children: [          
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
@@ -110,9 +128,9 @@ class _VocScreenState extends State<VocScreen> {
                                   ? const Icon(Icons.delete, color: Colors.red)
                                   : Icon(
                                       word.learned
-                                          ? Icons.star
-                                          : Icons.star_border,
-                                      color: Colors.amber,
+                                          ? Icons.check_circle
+                                          : Icons.radio_button_unchecked,
+                                      color: word.learned ? Colors.green : Colors.grey,
                                     ),
                               onPressed: () {
                                 setState(() {
@@ -120,6 +138,8 @@ class _VocScreenState extends State<VocScreen> {
                                     WordService.removeWord(word);
                                   } else {
                                     word.learned = !word.learned;
+                                    WordService.saveWords();
+                                    if (widget.onChanged != null) widget.onChanged!();
                                   }
                                 });
                               },
@@ -158,6 +178,30 @@ class _VocScreenState extends State<VocScreen> {
           )
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          VocScreen.showAddWordDialog(context, widget.language, onWordAdded: () {
+            setState(() {});
+          });
+        },
+        child: const Icon(Icons.add),
+      ),
     );
+  }
+
+  void _deleteWord(Word word) {
+    setState(() {
+      WordService.words.remove(word);
+      WordService.saveWords();
+      if (widget.onChanged != null) widget.onChanged!();
+    });
+  }
+
+  void _toggleLearned(Word word) {
+    setState(() {
+      word.learned = !word.learned;
+      WordService.saveWords();
+      if (widget.onChanged != null) widget.onChanged!();
+    });
   }
 }
