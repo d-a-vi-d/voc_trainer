@@ -4,9 +4,9 @@ import 'screens/learn_mode_screen.dart';
 import 'package:voc_trainer/services/word_service.dart';
 import 'models/word.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:drag_and_drop_lists/drag_and_drop_lists.dart';
 
-
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WordService.loadWords();
   runApp(const MyApp());
@@ -41,12 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
   int? dropPreviewIndex;
   bool isDraggingMode = false;
   DateTime? dragStartTime;
-
+  late List<DragAndDropList> langLists; // Liste für Drag&Drop
+  late List<String> currentLanguages;
+  /// Aktuelle Sprachen aus WordService
   List<String> get languages {
-    final langs = WordService.words.map((w) => w.language).where((l) => l.isNotEmpty).toSet();
-    if (!langs.contains('Englisch')) langs.add('Englisch');
-    return langs.toList();
+    final langs = WordService.words
+        .map((w) => w.language)
+        .where((l) => l.isNotEmpty)
+        .toSet();
+    return langs.isNotEmpty ? langs.toList() : ['Englisch'];
   }
+  @override
+  void initState() {
+    super.initState();
+    currentLanguages = languages;
 
   void _addLanguageDialog() {
     final controller = TextEditingController();
@@ -96,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
               WordService.words.removeWhere((w) => w.language == lang);
               WordService.saveWords();
               setState(() {
-                selectedLangIndex = 0;
+                currentLanguages.remove(lang);
               });
               Navigator.pop(context);
             },
@@ -109,8 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final langList = List.from(languages);
-    final currentLang = langList.isNotEmpty ? langList[selectedLangIndex] : 'Englisch';
+    final langList = List<String>.from(languages);
+    final currentLang = currentLanguages.isNotEmpty ? currentLanguages[selectedLangIndex] : 'Englisch';
     const Color mainGreen = Color(0xFF4CB78A);
     const Color accentGreen = Color(0xFF7DD8A7);
 
@@ -188,153 +196,50 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 100,
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         color: Colors.white,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  ...List.generate(
-                    langList.length + (isDraggingMode && dropPreviewIndex != null ? 1 : 0),
-                    (i) {
-                      // Show DottedBorder at dropPreviewIndex
-                      if (isDraggingMode && dropPreviewIndex == i) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: DottedBorder(
-                            color: Colors.green,
-                            strokeWidth: 2,
-                            dashPattern: [6, 3],
-                            borderType: BorderType.RRect,
-                            radius: const Radius.circular(20),
-                            child: Container(
-                              width: 100,
-                              height: 40,
-                            ),
-                          ),
-                        );
-                      }
-                      // Adjust index if DottedBorder is inserted
-                      final realIndex = (isDraggingMode && dropPreviewIndex != null && i > dropPreviewIndex!) ? i - 1 : i;
-                      if (realIndex >= langList.length) return const SizedBox.shrink();
-                      final lang = langList[realIndex];
-                      final isSelected = selectedLangIndex == realIndex;
-                      final isDragging = draggingIndex == realIndex && isDraggingMode;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: isDragging
-                            ? Draggable<int>(
-                                data: realIndex,
-                                feedback: Material(
-                                  color: Colors.transparent,
-                                  child: Chip(
-                                    label: Text(
-                                      lang,
-                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                    ),
-                                    backgroundColor: Colors.green,
-                                    labelStyle: const TextStyle(color: Colors.white),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  ),
-                                ),
-                                childWhenDragging: const SizedBox.shrink(),
-                                onDragEnd: (details) {
-                                  setState(() {
-                                    draggingIndex = null;
-                                    isDraggingMode = false;
-                                    dropPreviewIndex = null;
-                                  });
-                                },
-                              )
-                            : DragTarget<int>(
-                                onWillAccept: (fromIndex) {
-                                  if (!isDraggingMode || fromIndex == realIndex) return false;
-                                  setState(() => dropPreviewIndex = i);
-                                  return true;
-                                },
-                                onLeave: (data) {
-                                  setState(() => dropPreviewIndex = null);
-                                },
-                                onAccept: (fromIndex) {
-                                  setState(() {
-                                    final movedLang = langList.removeAt(fromIndex);
-                                    langList.insert(i, movedLang);
-                                    selectedLangIndex = langList.indexOf(movedLang);
-                                    draggingIndex = null;
-                                    isDraggingMode = false;
-                                    dropPreviewIndex = null;
-                                  });
-                                },
-                                builder: (context, candidateData, rejectedData) => GestureDetector(
-                                  onLongPressStart: (_) {
-                                    dragStartTime = DateTime.now();
-                                  },
-                                  onLongPressEnd: (_) {
-                                    if (dragStartTime != null &&
-                                        DateTime.now().difference(dragStartTime!) > const Duration(milliseconds: 900)) {
-                                      setState(() {
-                                        draggingIndex = realIndex;
-                                        isDraggingMode = true;
-                                        dropPreviewIndex = realIndex;
-                                      });
-                                    }
-                                  },
-                                  onTap: () {
-                                    if (!isDraggingMode) {
-                                      setState(() => selectedLangIndex = realIndex);
-                                    }
-                                  },
-                                  child: Chip(
-                                    label: Text(
-                                      lang,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelected ? Colors.white : Colors.black87,
-                                      ),
-                                    ),
-                                    backgroundColor: isSelected ? Colors.green : Colors.grey[300],
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  ),
-                                ),
-                              ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 16),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle, size: 32, color: Colors.green),
-                    onPressed: _addLanguageDialog,
-                    tooltip: 'Sprache hinzufügen',
-                  ),
-                ],
-              ),
-            ),
-            // Mülleimer nur im Drag-Modus sichtbar und als DragTarget
-            if (isDraggingMode && draggingIndex != null)
-              Positioned(
-                child: DragTarget<int>(
-                  builder: (context, candidateData, rejectedData) => Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red[400],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.delete, color: Colors.white, size: 36),
-                  ),
-                  onWillAccept: (fromIndex) => true,
-                  onAccept: (fromIndex) {
-                    setState(() {
-                      _deleteLanguage(langList[fromIndex]);
-                      draggingIndex = null;
-                      dropPreviewIndex = null;
-                      isDraggingMode = false;
-                    });
-                  },
-                ),
-              ),
-          ],
+        child: LanguageBar(
+
+          langList: currentLanguages,
+          selectedLangIndex: selectedLangIndex,
+          draggingIndex: draggingIndex,
+          dropPreviewIndex: dropPreviewIndex,
+          isDraggingMode: isDraggingMode,
+          dragStartTime: dragStartTime,
+          onSelect: (index) => setState(() => selectedLangIndex = index),
+          onStartDrag: (index) => setState(() => dropPreviewIndex = index >= 0 ? index : null),
+          onDrop: (index) {
+            setState(() {
+              if (draggingIndex != null && index >= 0 && draggingIndex != index) {
+                final movedLang = langList.removeAt(draggingIndex!);
+                langList.insert(index, movedLang);
+                selectedLangIndex = langList.indexOf(movedLang);
+              }
+              draggingIndex = null;
+              isDraggingMode = false;
+              dropPreviewIndex = null;
+            });
+          },
+          onDelete: (index) {
+            setState(() {
+              _deleteLanguage(langList[index]);
+              draggingIndex = null;
+              dropPreviewIndex = null;
+              isDraggingMode = false;
+            });
+          },
+          onLongPressStart: (index) => dragStartTime = DateTime.now(),
+          onLongPressEnd: (index) {
+            if (dragStartTime != null &&
+                DateTime.now().difference(dragStartTime!) > const Duration(milliseconds: 900)) {
+              setState(() {
+                draggingIndex = index;
+                isDraggingMode = true;
+                dropPreviewIndex = index;
+              });
+            }
+          },
+          onAddLanguage: _addLanguageDialog,
+          mainGreen: mainGreen,
+          accentGreen: accentGreen,
         ),
       ),
 
@@ -359,6 +264,151 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             )
           : null,
+    );
+  }
+}
+
+// 1. Extrahiere das Widget:
+class LanguageBar extends StatelessWidget {
+  final List<String> langList;
+  final int selectedLangIndex;
+  final int? draggingIndex;
+  final int? dropPreviewIndex;
+  final bool isDraggingMode;
+  final DateTime? dragStartTime;
+  final void Function(int) onSelect;
+  final void Function(int) onStartDrag;
+  final void Function(int) onDrop;
+  final void Function(int) onDelete;
+  final void Function(int) onLongPressStart;
+  final void Function(int) onLongPressEnd;
+  final VoidCallback onAddLanguage;
+  final Color mainGreen;
+  final Color accentGreen;
+
+  const LanguageBar({
+    super.key,
+    required this.langList,
+    required this.selectedLangIndex,
+    required this.draggingIndex,
+    required this.dropPreviewIndex,
+    required this.isDraggingMode,
+    required this.dragStartTime,
+    required this.onSelect,
+    required this.onStartDrag,
+    required this.onDrop,
+    required this.onDelete,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
+    required this.onAddLanguage,
+    required this.mainGreen,
+    required this.accentGreen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              ...List.generate(
+                langList.length + (isDraggingMode && dropPreviewIndex != null ? 1 : 0),
+                (i) {
+                  // Show DottedBorder at dropPreviewIndex
+                  if (isDraggingMode && dropPreviewIndex == i) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: DottedBorder(
+                        options: RoundedRectDottedBorderOptions(
+                          color: Colors.green,
+                          strokeWidth: 2,
+                          dashPattern: [6, 3],
+                          radius: const Radius.circular(20),
+                        ),
+                        child: const SizedBox(width: 100, height: 40),
+                      ),
+                    );
+                  }
+                  // Adjust index if DottedBorder is inserted
+                  final realIndex = (isDraggingMode && dropPreviewIndex != null && i > dropPreviewIndex!) ? i - 1 : i;
+                  if (realIndex >= langList.length) return const SizedBox.shrink();
+                  final lang = langList[realIndex];
+                  final isSelected = selectedLangIndex == realIndex;
+                  final isDragging = draggingIndex == realIndex && isDraggingMode;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: isDragging
+                        ? Draggable<int>(
+                            data: realIndex,
+                            feedback: Material(
+                              color: Colors.transparent,
+                              child: Chip(
+                                label: Text(
+                                  lang,
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                                backgroundColor: Colors.green,
+                                labelStyle: const TextStyle(color: Colors.white),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              ),
+                            ),
+                            child: const SizedBox.shrink(),
+                            onDragEnd: (details) {
+                              onDrop(-1); // Use -1 or a special value to indicate drag end without drop
+                            },
+                          )
+                        : DragTarget<int>(
+                            onWillAccept: (fromIndex) {
+                              if (!isDraggingMode || fromIndex == realIndex) return false;
+                              onStartDrag(i);
+                              return true;
+                            },
+                            onLeave: (data) {
+                              onStartDrag(-1);
+                            },
+                            onAccept: (fromIndex) {
+                              onDrop(i);
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return GestureDetector(
+                                onLongPressStart: (_) => onLongPressStart(realIndex),
+                                onLongPressEnd: (_) => onLongPressEnd(realIndex),
+                                onTap: () {
+                                  if (!isDraggingMode) {
+                                    onSelect(realIndex);
+                                  }
+                                },
+                                child: Chip(
+                                  label: Text(
+                                    lang,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: isSelected ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                  backgroundColor: isSelected ? Colors.green : Colors.grey[300],
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                ),
+                              );
+                            },
+                          ),
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
+              IconButton(
+                icon: const Icon(Icons.add_circle, size: 32, color: Colors.green),
+                onPressed: onAddLanguage,
+                tooltip: 'Sprache hinzufügen',
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
