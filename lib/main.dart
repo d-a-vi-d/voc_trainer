@@ -203,11 +203,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: DottedBorder(
-                            color: Colors.green,
-                            strokeWidth: 2,
-                            dashPattern: [6, 3],
-                            borderType: BorderType.RRect,
-                            radius: const Radius.circular(20),
+                             options: RoundedRectDottedBorderOptions(
+                              color: Colors.green,
+                              strokeWidth: 2,
+                              dashPattern: [6, 3],
+                              radius: const Radius.circular(20),
+                            ),
+
                             child: Container(
                               width: 100,
                               height: 40,
@@ -238,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                   ),
                                 ),
-                                childWhenDragging: const SizedBox.shrink(),
+                                child: const SizedBox.shrink(),
                                 onDragEnd: (details) {
                                   setState(() {
                                     draggingIndex = null;
