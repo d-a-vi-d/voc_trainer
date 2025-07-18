@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/add_word_screen.dart';
-import 'screens/learn_screen.dart';
-import 'screens/overview_screen.dart';
 import 'package:voc_trainer/services/word_service.dart';
+import 'package:voc_trainer/screens/home_screen.dart';
 
 
 void main() async{
@@ -26,51 +24,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    AddWordScreen(),
-    LearnScreen(),
-    OverviewScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Wörter',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'Lernen',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Übersicht',
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // übersetzung nicht gleich sichtbar
 // alles schöner machen
