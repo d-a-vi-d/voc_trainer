@@ -4,14 +4,27 @@ import '../models/word.dart';
 
 class WordService {
   static const _key = 'words';
+  static const _keyLanguages = 'languages';
+  static List<String> languages = [];
   static List<Word> words = [];
 
+  static Future<void> loadAll() async {
+    await loadWords();
+    await loadLanguages();
+  }
+
   static Future<void> loadWords() async {
+  final prefs = await SharedPreferences.getInstance();
+  final jsonList = prefs.getStringList(_key) ?? [];
+  words = jsonList
+      .map((jsonWord) => Word.fromJson(json.decode(jsonWord)))
+      .toList();
+  }
+
+  static Future<void> loadLanguages() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonList = prefs.getStringList(_key) ?? [];
-    words = jsonList
-        .map((jsonWord) => Word.fromJson(json.decode(jsonWord)))
-        .toList();
+    languages = prefs.getStringList(_keyLanguages) ?? ['Englisch', 'Spanisch', 'Thai'];
+    languages.sort();
   }
 
   static Future<void> saveWords() async {
@@ -36,5 +49,19 @@ class WordService {
 
   static List<Word> getWordsForLanguage(String language) {
     return words.where((w) => w.language == language).toList();
+  }
+
+  
+
+  static Future<void> saveLanguages() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_keyLanguages, languages);
+  }
+  static Future<void> addLanguage(String language) async {
+  if (!languages.contains(language)) {
+    languages.add(language);
+    languages.sort();
+    await saveLanguages();
+  }
   }
 }

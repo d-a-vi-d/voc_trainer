@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'voc_screen.dart';
 import '../services/word_service.dart';
 import '../models/word.dart';
+import '../utils/languages.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -23,7 +24,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
     if (_controller.text.trim().isEmpty) return;
     final newLang = _controller.text.trim();
     setState(() {
-      if (!_getLanguages().contains(newLang)) {
+      if (!getLanguages().contains(newLang)) {
         // Add a dummy word for the new language
         WordService.words.add(
           Word(word: '', translation: '', language: newLang),
@@ -70,7 +71,7 @@ class _OverviewScreenState extends State<OverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final languages = _getLanguages();
+    final languages = getLanguages();
     return Scaffold(
       appBar: AppBar(title: const Text('Übersicht & Sprachen')),
       body: Padding(
@@ -165,11 +166,5 @@ class _OverviewScreenState extends State<OverviewScreen> {
     );
   }
 
-  List<String> _getLanguages() {
-    final savedLangs = WordService.words.map((w) => w.language).where((l) => l.isNotEmpty).toSet();
-    final allLangs = {'Englisch', 'Spanisch', 'Thai', ...savedLangs};
-    final langsList = allLangs.toList();
-    langsList.sort();
-    return langsList;
-  }
+  
 }

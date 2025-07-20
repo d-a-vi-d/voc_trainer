@@ -5,7 +5,7 @@ import 'package:voc_trainer/screens/home_screen.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  await WordService.loadWords();
+  await WordService.loadAll();
   runApp(const MyApp());
 }
 
