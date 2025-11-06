@@ -4,7 +4,19 @@ import '../models/word.dart';
 
 class WordService {
   static const _key = 'words';
+  static const _langKey = 'languages';
   static List<Word> words = [];
+  static List<String> languages = [];
+
+  static Future<void> load() async {
+    await loadWords();
+    await loadLanguages();
+  }
+
+  static Future<void> loadLanguages() async {
+    final prefs = await SharedPreferences.getInstance();
+    languages = prefs.getStringList(_langKey) ?? ['Englisch'];
+  }
 
   static Future<void> loadWords() async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,6 +32,11 @@ class WordService {
     await prefs.setStringList(_key, jsonList);
   }
 
+  static Future<void> saveLanguages() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_langKey, languages);
+  }
+
   static Future<void> addWord(Word word) async {
     words.add(word);
     await saveWords();
@@ -29,6 +46,23 @@ class WordService {
     words.remove(word);
     await saveWords();
   }
+
+  static Future<void> addLanguage(String language) async {
+    if (!languages.contains(language)) {
+      languages.add(language);
+      await saveLanguages();
+    }
+  }
+
+  static Future<void> removeLanguage(String language) async {
+    if (languages.remove(language)) {
+      words.removeWhere((w) => w.language == language);
+      await saveLanguages();
+      await saveWords();
+    }
+  }
+
+
 
   static Future<void> update() async {
     await saveWords();

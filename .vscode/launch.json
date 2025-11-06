@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter auf Handy (RMX3085)",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "4XX8BEL7MFTWTW75"
+    }
+  ]
+}
