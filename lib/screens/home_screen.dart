@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../widgets/language_bar.dart';
 import 'voc_screen.dart';
@@ -76,6 +78,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildLanguagetile(int index) => Container(   
+    margin: const EdgeInsets.all(5),
+    decoration: BoxDecoration(
+      color: index == selectedLangIndex ? Colors.green : Colors.white,
+      borderRadius: BorderRadius.circular(15), 
+      border: Border.all(color: Colors.black, width: 3),
+    ),
+    alignment: Alignment.center,
+    padding: const EdgeInsets.all(10),
+    transform: index == selectedLangIndex ? Matrix4.rotationZ(0.0) : index < selectedLangIndex ? Matrix4.rotationZ(-0.05) : Matrix4.rotationZ(0.05),
+    child: Text(
+        WordService.languages[index],
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: index == selectedLangIndex ? FontWeight.bold : FontWeight.normal
+          )
+      ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final currentLang = WordService.languages[selectedLangIndex];
@@ -105,12 +126,12 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 80,
 
 
-        child: ReorderableListView(   
+        child: ReorderableListView(
+          proxyDecorator: (Widget child, int index, Animation<double> animation) => _buildLanguagetile(index),
           scrollDirection: Axis.horizontal,          
           onReorder: (int oldIndex, int newIndex) {
             setState(() {
               if (oldIndex < newIndex) newIndex -= 1;
-
               final previouslySelected = WordService.languages[selectedLangIndex];
               final String item = WordService.languages.removeAt(oldIndex);
               WordService.languages.insert(newIndex, item);
@@ -130,10 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },                
                 key: Key('$index'),
-                child: Container(                  
-                  color: index == selectedLangIndex ? Colors.blue : Colors.red,
-                  child: Text(WordService.languages[index]),
-                ),
+                child: _buildLanguagetile(index)
               ),
           ],
         )
