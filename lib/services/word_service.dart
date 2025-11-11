@@ -19,11 +19,25 @@ class WordService {
   }
 
   static Future<void> loadWords() async {
+
+    
+
     final prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getStringList(_key) ?? [];
     words = jsonList
         .map((jsonWord) => Word.fromJson(json.decode(jsonWord)))
         .toList();
+
+
+//     final quizlet = """""";
+//     final wordsRaw = quizlet.split("newline");
+//     for (final wordRaw in wordsRaw) {
+//       if (wordRaw.isEmpty) continue;
+//       final parts = wordRaw.split("penis");
+//       final word = Word(language: "Englisch", word: parts[0], translation: parts[1]);
+//       words.add(word);
+//     }
+//     saveWords();
   }
 
   static Future<void> saveWords() async {

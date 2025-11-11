@@ -107,6 +107,8 @@ class LanguageBar extends StatelessWidget {
               ),
               child: GestureDetector(
                 onTap: () => onSelect(i),
+
+                
                 child: Container(
                   width: 70,
                   padding: const EdgeInsets.all(12),
@@ -126,6 +128,8 @@ class LanguageBar extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                
               ),
             ),
           );

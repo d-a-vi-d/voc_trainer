@@ -1,11 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import '../widgets/language_bar.dart';
 import 'voc_screen.dart';
 import 'learn_mode_screen.dart';
 import '../services/word_service.dart';
-import '../models/word.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Sprache hinzufügen'),
         content: TextField(
+          autofocus: true,
           controller: controller,
           decoration: const InputDecoration(labelText: 'Sprache'),
         ),
@@ -53,7 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _deleteLanguage(String lang) {
+  void _deleteLanguageDialog(int index) {
+    final lang = WordService.languages[index];
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -66,9 +64,12 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('Abbrechen'),
           ),
           TextButton(
-            onPressed: () {
-              WordService.removeLanguage(lang);
-              setState(() {});
+            onPressed: () async {
+              if (index <= selectedLangIndex) {
+                selectedLangIndex -= 1;
+              }
+              await WordService.removeLanguage(lang);
+              setState(() {});              
               Navigator.pop(context);
             },
             child: const Text('Löschen', style: TextStyle(color: Colors.red)),
@@ -99,10 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentLang = WordService.languages[selectedLangIndex];
-
-    const Color mainGreen = Color(0xFF4CB78A);
-    const Color accentGreen = Color(0xFF7DD8A7);
+    final currentLang = WordService.languages[selectedLangIndex];    
 
     return Scaffold(
       appBar: AppBar(
@@ -123,17 +121,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: VocScreen(language: currentLang),
       bottomNavigationBar: SizedBox(
-        height: 80,
-
-
+        height: 90,
         child: ReorderableListView(
           proxyDecorator: (Widget child, int index, Animation<double> animation) => _buildLanguagetile(index),
           scrollDirection: Axis.horizontal,          
-          onReorder: (int oldIndex, int newIndex) {
+          onReorder: (int index, int newIndex) {
+            final plusIndex = WordService.languages.length + 1;
+            
+            if (newIndex == plusIndex) {
+              _deleteLanguageDialog(index);
+              return;
+            }
+
             setState(() {
-              if (oldIndex < newIndex) newIndex -= 1;
+              if (index < newIndex) newIndex -= 1;
               final previouslySelected = WordService.languages[selectedLangIndex];
-              final String item = WordService.languages.removeAt(oldIndex);
+              final String item = WordService.languages.removeAt(index);
               WordService.languages.insert(newIndex, item);
 
               selectedLangIndex = WordService.languages.indexOf(previouslySelected);
@@ -153,7 +156,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 key: Key('$index'),
                 child: _buildLanguagetile(index)
               ),
-          ],
+            GestureDetector(
+              onTap: (){
+                _addLanguageDialog();
+                setState(() {
+                });              
+              },
+              onLongPress: () {},
+              key: Key('add/ delete Button'),
+              child: Container(                
+                margin: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15), 
+                  border: Border.all(color: Colors.black, width: 3),
+                ),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(10),
+                transform: Matrix4.rotationZ(0.05),
+                child: Icon(Icons.add)                
+              ),
+            )
+
+
+          ],            
         )
         // child: LanguageBar(
         //   langList: currentWordService.languages,

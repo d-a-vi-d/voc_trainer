@@ -18,6 +18,7 @@ class VocScreen extends StatefulWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              autofocus: true,
               controller: wordController,
               decoration: const InputDecoration(labelText: 'Wort'),
             ),
