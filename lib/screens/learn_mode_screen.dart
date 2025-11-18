@@ -75,18 +75,85 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
       appBar: AppBar(
         title: Text('Lernen: ${widget.language}'),
         actions: [
-          IconButton(
+          IconButton(            
             icon: Icon(
-              showOnlyNotLearned ? Icons.star_border : Icons.star,
-              color: showOnlyNotLearned ? Colors.grey : Colors.amber,
+              Icons.menu,
+              color: Colors.grey
             ),
             onPressed: () {
-              setState(() {
-                showOnlyNotLearned = !showOnlyNotLearned;
-                _initLearning(); // Liste neu aufbauen
-              });
+
+
+              
+              showModalBottomSheet(
+                context: context,
+                builder: 
+                  (context) => StatefulBuilder(
+                    builder: (context, setState) {
+                      return Container(
+                        child: Column(
+                          children: [
+                            Text("show already learned?"),
+                            Row(children: [
+                              //show all words button
+                              GestureDetector(
+                                onTap:() {                  
+                                  setState(() {
+                                    showOnlyNotLearned = false;
+                                    _initLearning(); //Liste neu aufbauen
+                                  });
+                                },
+                                child: Container(   
+                                  margin: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: showOnlyNotLearned == false ? Colors.green : Colors.white,
+                                    borderRadius: BorderRadius.circular(15), 
+                                    border: Border.all(color: Colors.black, width: 3),
+                                  ),
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    "yess",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.normal
+                                    )
+                                  ),
+                                )
+                              ),
+                              //only show new words button
+                              GestureDetector(
+                                onTap:() {                  
+                                  setState(() {
+                                    showOnlyNotLearned = true;
+                                    _initLearning(); //Liste neu aufbauen
+                                  });
+                                },
+                                child: Container(   
+                                  margin: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: showOnlyNotLearned == true ? Colors.green : Colors.white,
+                                    borderRadius: BorderRadius.circular(15), 
+                                    border: Border.all(color: Colors.black, width: 3),
+                                  ),
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    "noo",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.normal
+                                    )
+                                  ),
+                                )
+                              ),
+                            ],)
+                          ],
+                        )
+                      );
+                    }
+                  )
+              );
             },
-            tooltip: showOnlyNotLearned ? 'Zeige ALLE' : 'Zeige nur nicht-gelernte',
           )
         ],
       ),

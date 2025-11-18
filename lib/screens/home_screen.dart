@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     alignment: Alignment.center,
     padding: const EdgeInsets.all(10),
-    transform: index == selectedLangIndex ? Matrix4.rotationZ(0.0) : index < selectedLangIndex ? Matrix4.rotationZ(-0.05) : Matrix4.rotationZ(0.05),
+    
     child: Text(
         WordService.languages[index],
         style: TextStyle(
@@ -173,7 +173,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
-                transform: Matrix4.rotationZ(0.05),
                 child: Icon(Icons.add)                
               ),
             )
