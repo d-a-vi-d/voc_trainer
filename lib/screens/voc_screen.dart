@@ -71,7 +71,12 @@ class _VocScreenState extends State<VocScreen> {
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                top: 8,
+                bottom: 75              
+              ),
               itemCount: words.length,
               itemBuilder: (context, index) {
                 final word = words[index];

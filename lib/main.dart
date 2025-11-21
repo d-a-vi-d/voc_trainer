@@ -23,3 +23,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// anders rum lernen (von deutsch auf thai)
+// sprachen anders löschen als ganz nach rechts ziehen
