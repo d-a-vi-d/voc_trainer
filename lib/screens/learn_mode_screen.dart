@@ -81,72 +81,94 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
               color: Colors.grey
             ),
             onPressed: () {
-
-
-              
               showModalBottomSheet(
                 context: context,
                 builder: 
                   (context) => StatefulBuilder(
                     builder: (context, setState) {
                       return Container(
+                        padding: const EdgeInsets.fromLTRB(20,10,20,50),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text("show already learned?"),
-                            Row(children: [
-                              //show all words button
-                              GestureDetector(
-                                onTap:() {                  
-                                  setState(() {
-                                    showOnlyNotLearned = false;
-                                    _initLearning(); //Liste neu aufbauen
-                                  });
-                                },
-                                child: Container(   
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showOnlyNotLearned == false ? Colors.green : Colors.white,
-                                    borderRadius: BorderRadius.circular(15), 
-                                    border: Border.all(color: Colors.black, width: 3),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.all(10),
-                                  child: Text(
-                                    "yess",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal
-                                    )
-                                  ),
-                                )
+
+                            Container(
+                              width: 40,
+                              height: 4,
+                              margin: const EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[500],
+                                borderRadius: BorderRadius.circular(2),
                               ),
-                              //only show new words button
-                              GestureDetector(
-                                onTap:() {                  
-                                  setState(() {
-                                    showOnlyNotLearned = true;
-                                    _initLearning(); //Liste neu aufbauen
-                                  });
-                                },
-                                child: Container(   
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showOnlyNotLearned == true ? Colors.green : Colors.white,
-                                    borderRadius: BorderRadius.circular(15), 
-                                    border: Border.all(color: Colors.black, width: 3),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.all(10),
-                                  child: Text(
-                                    "noo",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal
-                                    )
-                                  ),
-                                )
+                            ),
+                            Text(
+                              "Show already learned?",
+                              style: TextStyle(
+                                fontSize: 20, // Größerer Text
+                                fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
+                                color: Colors.black87, // Weicheres Schwarz
+                                letterSpacing: 0.5, // Leichter Buchstabenabstand
                               ),
-                            ],)
+                            ),
+                            const SizedBox(height: 20), // Mehr Abstand zwischen Text und Buttons
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                
+                                //show all words button
+                                GestureDetector(
+                                  onTap:() {                  
+                                    setState(() {
+                                      showOnlyNotLearned = false;
+                                      _initLearning(); //Liste neu aufbauen
+                                    });
+                                  },
+                                  child: Container(   
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: showOnlyNotLearned == false ? Colors.green : Colors.white,
+                                      borderRadius: BorderRadius.circular(15), 
+                                      border: Border.all(color: Colors.black, width: 3),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    child: Text(
+                                      "yess",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.normal
+                                      )
+                                    ),
+                                  )
+                                ),
+                                //only show new words button
+                                GestureDetector(
+                                  onTap:() {                  
+                                    setState(() {
+                                      showOnlyNotLearned = true;
+                                      _initLearning(); //Liste neu aufbauen
+                                    });
+                                  },
+                                  child: Container(   
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: showOnlyNotLearned == true ? Colors.green : Colors.white,
+                                      borderRadius: BorderRadius.circular(15), 
+                                      border: Border.all(color: Colors.black, width: 3),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.all(10),
+                                    child: Text(
+                                      "noo",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.normal
+                                      )
+                                    ),
+                                  )
+                                ),
+                              ],)
                           ],
                         )
                       );
