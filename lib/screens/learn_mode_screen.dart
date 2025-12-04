@@ -18,6 +18,7 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
   late List<Word> shuffledWords;    // Gemischte Liste für die Session
   int currentIndex = 0;             // Index im shuffledWords
   bool showTranslation = false;
+  bool showTranslationFirst = true;
 
   @override
   void initState() {
@@ -40,7 +41,7 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
     if (shuffledWords.isEmpty) return;
     setState(() {
       currentIndex = (currentIndex + 1) % shuffledWords.length;
-      showTranslation = false;
+      showTranslation = showTranslationFirst;
     });
   }
 
@@ -48,7 +49,7 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
     if (shuffledWords.isEmpty) return;
     setState(() {
       currentIndex = (currentIndex - 1 + shuffledWords.length) % shuffledWords.length;
-      showTranslation = false;
+      showTranslation = showTranslationFirst;
     });
   }
 
@@ -101,6 +102,7 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
+
                             Text(
                               "Show already learned?",
                               style: TextStyle(
@@ -110,12 +112,10 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
                                 letterSpacing: 0.5, // Leichter Buchstabenabstand
                               ),
                             ),
-                            const SizedBox(height: 20), // Mehr Abstand zwischen Text und Buttons
-
+                            const SizedBox(height: 10), // Mehr Abstand zwischen Text und Buttons
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                
                                 //show all words button
                                 GestureDetector(
                                   onTap:() {                  
@@ -158,9 +158,77 @@ class _LearnModeScreenState extends State<LearnModeScreen> {
                                       border: Border.all(color: Colors.black, width: 3),
                                     ),
                                     alignment: Alignment.center,
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                                     child: Text(
                                       "noo",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.normal
+                                      )
+                                    ),
+                                  )
+                                ),
+                              ],),
+                              const SizedBox(height: 30),
+
+                              Text(
+                              "Which language first?",
+                              style: TextStyle(
+                                fontSize: 20, 
+                                fontWeight: FontWeight.bold, 
+                                color: Colors.black87, 
+                                letterSpacing: 0.5, 
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //show home language first
+                                GestureDetector(
+                                  onTap:() {                  
+                                    setState(() {
+                                      showTranslationFirst = true;
+                                      _initLearning(); //Liste neu aufbauen
+                                    });
+                                  },
+                                  child: Container(   
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: showTranslationFirst == true ? Colors.green : Colors.white,
+                                      borderRadius: BorderRadius.circular(15), 
+                                      border: Border.all(color: Colors.black, width: 3),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    child: Text(
+                                      "home",
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.normal
+                                      )
+                                    ),
+                                  )
+                                ),
+                                //show foreign language first
+                                GestureDetector(
+                                  onTap:() {                  
+                                    setState(() {
+                                      showTranslationFirst = false;
+                                      _initLearning(); //Liste neu aufbauen
+                                    });
+                                  },
+                                  child: Container(   
+                                    margin: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: showTranslationFirst == false ? Colors.green : Colors.white,
+                                      borderRadius: BorderRadius.circular(15), 
+                                      border: Border.all(color: Colors.black, width: 3),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                                    child: Text(
+                                      "foreign",
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.normal

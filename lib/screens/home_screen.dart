@@ -57,7 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Sprache löschen'),
         content: Text(
-            'Möchtest du "$lang" und alle zugehörigen Wörter wirklich löschen?'),
+          'Möchtest du "$lang" und alle zugehörigen Wörter wirklich löschen?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -69,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 selectedLangIndex -= 1;
               }
               await WordService.removeLanguage(lang);
-              setState(() {});              
+              setState(() {});
               Navigator.pop(context);
             },
             child: const Text('Löschen', style: TextStyle(color: Colors.red)),
@@ -79,31 +80,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLanguagetile(int index) => Container(   
+  Widget _buildLanguagetile(int index) => Container(
     margin: const EdgeInsets.all(5),
     decoration: BoxDecoration(
       color: index == selectedLangIndex ? Colors.green : Colors.white,
-      borderRadius: BorderRadius.circular(15), 
+      borderRadius: BorderRadius.circular(15),
       border: Border.all(color: Colors.black, width: 3),
     ),
     alignment: Alignment.center,
     padding: const EdgeInsets.all(10),
-    
+
     child: Text(
-        WordService.languages[index],
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: index == selectedLangIndex ? FontWeight.bold : FontWeight.normal
-          )
+      WordService.languages[index],
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: index == selectedLangIndex
+            ? FontWeight.bold
+            : FontWeight.normal,
       ),
+    ),
   );
 
   @override
   Widget build(BuildContext context) {
-    final currentLang = WordService.languages[selectedLangIndex];    
+    final currentLang = WordService.languages[selectedLangIndex];
 
     return Scaffold(
       appBar: AppBar(
+        actionsPadding: EdgeInsets.only(right: 8),
         title: Text(currentLang),
         actions: [
           ElevatedButton(
@@ -116,123 +120,80 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: const Text('Lernen'),
-          )
+          ),
         ],
       ),
       body: VocScreen(language: currentLang),
-      bottomNavigationBar: SizedBox(
-        height: 90,
-        child: ReorderableListView(
-          proxyDecorator: (Widget child, int index, Animation<double> animation) => _buildLanguagetile(index),
-          scrollDirection: Axis.horizontal,          
-          onReorder: (int index, int newIndex) {
-            final plusIndex = WordService.languages.length + 1;
-            
-            if (newIndex == plusIndex) {
-              _deleteLanguageDialog(index);
-              return;
-            }
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        child: SizedBox(
+          height: 90,
+          child: ReorderableListView(
+            proxyDecorator:
+                (Widget child, int index, Animation<double> animation) =>
+                    _buildLanguagetile(index),
+            scrollDirection: Axis.horizontal,
+            onReorder: (int index, int newIndex) {
+              final plusIndex = WordService.languages.length + 1;
 
-            setState(() {
-              if (index < newIndex) newIndex -= 1;
-              final previouslySelected = WordService.languages[selectedLangIndex];
-              final String item = WordService.languages.removeAt(index);
-              WordService.languages.insert(newIndex, item);
+              if (newIndex == plusIndex) {
+                _deleteLanguageDialog(index);
+                return;
+              }
 
-              selectedLangIndex = WordService.languages.indexOf(previouslySelected);
-              if (selectedLangIndex == -1) selectedLangIndex = 0;
+              setState(() {
+                if (index < newIndex) newIndex -= 1;
+                final previouslySelected =
+                    WordService.languages[selectedLangIndex];
+                final String item = WordService.languages.removeAt(index);
+                WordService.languages.insert(newIndex, item);
 
-              WordService.saveLanguages();
-            });
-          },
-          children: <Widget>[
-            for (int index = 0; index < WordService.languages.length; index += 1)
-              GestureDetector(
-                onTap:() {                  
-                  setState(() {
-                    selectedLangIndex = index;
-                  });
-                },                
-                key: Key('$index'),
-                child: _buildLanguagetile(index)
-              ),
-            GestureDetector(
-              onTap: (){
-                _addLanguageDialog();
-                setState(() {
-                });              
-              },
-              onLongPress: () {},
-              key: Key('add/ delete Button'),
-              child: Container(                
-                margin: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15), 
-                  border: Border.all(color: Colors.black, width: 3),
+                selectedLangIndex = WordService.languages.indexOf(
+                  previouslySelected,
+                );
+                if (selectedLangIndex == -1) selectedLangIndex = 0;
+
+                WordService.saveLanguages();
+              });
+            },
+            children: <Widget>[
+              for (
+                int index = 0;
+                index < WordService.languages.length;
+                index += 1
+              )
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedLangIndex = index;
+                    });
+                  },
+                  key: Key('$index'),
+                  child: _buildLanguagetile(index),
                 ),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                child: Icon(Icons.add)                
+              GestureDetector(
+                onTap: () {
+                  _addLanguageDialog();
+                  setState(() {});
+                },
+                onLongPress: () {},
+                key: Key('add/ delete Button'),
+                child: Container(
+                  margin: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.black, width: 3),
+                  ),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(Icons.add),
+                ),
               ),
-            )
-
-
-          ],            
-        )
-        // child: LanguageBar(
-        //   langList: currentWordService.languages,
-        //   selectedLangIndex: selectedLangIndex,
-        //   draggingIndex: draggingIndex,
-        //   dropPreviewIndex: dropPreviewIndex,
-        //   isDraggingMode: isDraggingMode,
-        //   onSelect: (index) => setState(() => selectedLangIndex = index),
-        //   onAddLanguage: _addLanguageDialog,
-        //   onDrop: (index) {
-        //     setState(() {
-        //       if (draggingIndex != null) {
-        //         if (index == null) return; // index ist null → nichts tun
-        //         if (index == -1) {
-        //           // Losgelassen auf Mülleimer
-        //           _deleteLanguage(currentWordService.languages[draggingIndex!]);
-        //         } else if (index >= 0 && draggingIndex != index) {
-        //           final moved = currentWordService.languages.removeAt(draggingIndex!);
-        //           currentWordService.languages.insert(index, moved);
-        //           selectedLangIndex = currentWordService.languages.indexOf(moved);
-        //         }
-        //       }
-        //       draggingIndex = null;
-        //       dropPreviewIndex = null;
-        //       isDraggingMode = false;
-        //     });
-
-        //   },
-        //   onDelete: (index) => _deleteLanguage(currentWordService.languages[index]),
-        //   onDragStart: (index) {
-        //     setState(() {
-        //       draggingIndex = index;
-        //       dropPreviewIndex = index;
-        //       isDraggingMode = true;
-        //     });
-        //   },
-        //   onDragUpdate: (targetIndex) {
-        //     setState(() {
-        //       dropPreviewIndex = targetIndex;
-        //     });
-        //   },
-        //   onDragEnd: () {
-        //     setState(() {
-        //       draggingIndex = null;
-        //       dropPreviewIndex = null;
-        //       isDraggingMode = false;
-        //     });
-        //   },
-        //   mainGreen: mainGreen,
-        //   accentGreen: accentGreen,
-        // ),
+            ],
+          ),
+        ),
       ),
-
-
     );
   }
 }
