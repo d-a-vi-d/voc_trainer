@@ -1,7 +1,16 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import '../services/word_service.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
+
+enum LanguageMode {
+  HomeLanguageFirst,
+  ForeignLanguageFirst,
+  RandomLanguageFirst,
+}
 
 class LearnScreen extends StatefulWidget {
   final String language;
@@ -18,8 +27,10 @@ class _LearnScreenState extends State<LearnScreen> {
   late List<Word> allWords; // Originalliste für diese Sprache
   late List<Word> shuffledWords; // Gemischte Liste für die Session
   int currentIndex = 0; // Index im shuffledWords
-  bool showTranslation = false;
-  bool showTranslationFirst = true;
+  bool showHomeLanguage = false;
+
+  LanguageMode currentLanguageMode = LanguageMode.HomeLanguageFirst;
+  //bool randomfirsttranslation = false
 
   @override
   void initState() {
@@ -42,7 +53,13 @@ class _LearnScreenState extends State<LearnScreen> {
     if (shuffledWords.isEmpty) return;
     setState(() {
       currentIndex = (currentIndex + 1) % shuffledWords.length;
-      showTranslation = showTranslationFirst;
+      if (currentLanguageMode == LanguageMode.HomeLanguageFirst) {
+        showHomeLanguage = true;
+      } else if (currentLanguageMode == LanguageMode.ForeignLanguageFirst) {
+        showHomeLanguage = false;
+      } else if (currentLanguageMode == LanguageMode.RandomLanguageFirst) {
+        showHomeLanguage = Random().nextBool();
+      }
     });
   }
 
@@ -51,7 +68,6 @@ class _LearnScreenState extends State<LearnScreen> {
     setState(() {
       currentIndex =
           (currentIndex - 1 + shuffledWords.length) % shuffledWords.length;
-      showTranslation = showTranslationFirst;
     });
   }
 
@@ -81,7 +97,7 @@ class _LearnScreenState extends State<LearnScreen> {
                 builder: (context) => StatefulBuilder(
                   builder: (context, setState) {
                     return Container(
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 50),
+                      padding: const EdgeInsets.fromLTRB(10, 10, 10, 50),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -106,78 +122,32 @@ class _LearnScreenState extends State<LearnScreen> {
                             ),
                           ),
                           const SizedBox(
-                            height: 10,
+                            height: 6,
                           ), // Mehr Abstand zwischen Text und Buttons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               //show all words button
-                              GestureDetector(
+                              MenuButton(
                                 onTap: () {
                                   setState(() {
                                     showOnlyNotLearned = false;
-                                    _initLearning(); //Liste neu aufbauen
+                                    _initLearning();
                                   });
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showOnlyNotLearned == false
-                                        ? Colors.green
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 3,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 12,
-                                  ),
-                                  child: Text(
-                                    "yess",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
+                                selected: !showOnlyNotLearned,
+                                text: "yesss",
                               ),
                               //only show new words button
-                              GestureDetector(
+                              MenuButton(
                                 onTap: () {
                                   setState(() {
                                     showOnlyNotLearned = true;
-                                    _initLearning(); //Liste neu aufbauen
+                                    _initLearning();
                                   });
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showOnlyNotLearned == true
-                                        ? Colors.green
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 3,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 12,
-                                  ),
-                                  child: Text(
-                                    "noo",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
+                                selected: showOnlyNotLearned,
+                                text: "nooo",
                               ),
                             ],
                           ),
@@ -192,77 +162,51 @@ class _LearnScreenState extends State<LearnScreen> {
                               letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               //show home language first
-                              GestureDetector(
+                              MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    showTranslationFirst = true;
+                                    currentLanguageMode =
+                                        LanguageMode.HomeLanguageFirst;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showTranslationFirst == true
-                                        ? Colors.green
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 3,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 12,
-                                  ),
-                                  child: Text(
-                                    "home",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
+                                selected:
+                                    LanguageMode ==
+                                    LanguageMode.HomeLanguageFirst,
+                                text: "home",
                               ),
                               //show foreign language first
-                              GestureDetector(
+                              MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    showTranslationFirst = false;
+                                    currentLanguageMode =
+                                        LanguageMode.ForeignLanguageFirst;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: showTranslationFirst == false
-                                        ? Colors.green
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 3,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 30,
-                                    vertical: 12,
-                                  ),
-                                  child: Text(
-                                    "foreign",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
+                                selected:
+                                    LanguageMode ==
+                                    LanguageMode.ForeignLanguageFirst,
+                                text: "foreign",
+                              ),
+                              //random language first
+                              MenuButton(
+                                onTap: () {
+                                  setState(() {
+                                    currentLanguageMode =
+                                        LanguageMode.RandomLanguageFirst;
+                                    _initLearning(); //Liste neu aufbauen
+                                  });
+                                },
+                                selected:
+                                    LanguageMode ==
+                                    LanguageMode.RandomLanguageFirst,
+                                text: "random",
                               ),
                             ],
                           ),
@@ -284,15 +228,20 @@ class _LearnScreenState extends State<LearnScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: LinearProgressBar(
-                      maxSteps: 6,
+                      minHeight: 20,
+                      maxSteps: WordService.getWordsForLanguage(
+                        widget.language,
+                      ).length,
                       progressType: LinearProgressBar
                           .progressTypeLinear, // Use Linear progress
-                      currentStep: 1,
-                      progressColor: Colors.red,
-                      backgroundColor: Colors.grey,
-                      borderRadius: BorderRadius.circular(10), //  NEW
+                      currentStep: WordService.getWordsForLanguage(
+                        widget.language,
+                      ).where((w) => w.learned).length,
+                      progressColor: Colors.green,
+                      backgroundColor: const Color.fromARGB(255, 208, 208, 208),
+                      borderRadius: BorderRadius.circular(50), //  NEW
                     ),
                   ),
                   const SizedBox(height: 50),
@@ -300,7 +249,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     duration: const Duration(milliseconds: 400),
                     child: ElevatedButton(
                       key: ValueKey(
-                        showTranslation
+                        showHomeLanguage
                             ? currentWord!.translation
                             : currentWord!.word,
                       ),
@@ -314,11 +263,11 @@ class _LearnScreenState extends State<LearnScreen> {
                       ),
                       onPressed: () {
                         setState(() {
-                          showTranslation = !showTranslation;
+                          showHomeLanguage = !showHomeLanguage;
                         });
                       },
                       child: Text(
-                        showTranslation
+                        showHomeLanguage
                             ? currentWord.translation
                             : currentWord.word,
                       ),

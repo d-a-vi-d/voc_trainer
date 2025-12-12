@@ -23,5 +23,3 @@ class MyApp extends StatelessWidget {
 }
 
 // sprachen overview screen
-// progress bar/ anzeige
-// random sprachrichtung

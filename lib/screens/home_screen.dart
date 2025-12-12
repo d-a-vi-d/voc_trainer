@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voc_trainer/screens/languages_overview_screen.dart';
 import 'learn_screen.dart';
 import '../services/word_service.dart';
 import '../models/word.dart';
@@ -182,6 +183,16 @@ class _HomeScreenState extends State<HomeScreen> {
         actionsPadding: EdgeInsets.only(right: 8),
         title: Text(currentLanguage),
         actions: [
+          IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => LanguagesOverviewScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 10),
           ElevatedButton(
             onPressed: () {
               Navigator.push(
