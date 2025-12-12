@@ -16,13 +16,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Vokabeltrainer',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
+      theme: ThemeData(primarySwatch: Colors.green),
       home: const HomeScreen(),
     );
   }
 }
 
-// anders rum lernen (von deutsch auf thai)
-// sprachen anders löschen als ganz nach rechts ziehen
+// sprachen overview screen
+// progress bar/ anzeige
+// random sprachrichtung

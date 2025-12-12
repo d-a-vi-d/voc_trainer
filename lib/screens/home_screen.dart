@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'voc_screen.dart';
-import 'learn_mode_screen.dart';
+import 'learn_screen.dart';
 import '../services/word_service.dart';
+import '../models/word.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,7 +11,80 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final Map<Word, bool> editMode = {};
   int selectedLangIndex = 0;
+  Future<void> showAddWordDialog(
+    BuildContext context,
+    String currentLanguage, {
+    VoidCallback? onWordAdded,
+  }) async {
+    bool alreadyEnteredAWord = false;
+    final wordController = TextEditingController();
+    final translationController = TextEditingController();
+    await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Neues Wort für $currentLanguage'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              autofocus: true,
+              controller: wordController,
+              decoration: const InputDecoration(labelText: 'Wort'),
+            ),
+            TextField(
+              controller: translationController,
+              decoration: const InputDecoration(labelText: 'Übersetzung'),
+            ),
+          ],
+        ),
+        actions: [
+          StatefulBuilder(
+            builder: (context, setState) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(alreadyEnteredAWord ? 'Fertig' : 'Abbrechen'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      final word = wordController.text.trim();
+                      final translation = translationController.text.trim();
+                      if (word.isNotEmpty && translation.isNotEmpty) {
+                        WordService.words.add(
+                          Word(
+                            word: word,
+                            translation: translation,
+                            language: currentLanguage,
+                          ),
+                        );
+                        WordService.saveWords();
+                        if (onWordAdded != null) onWordAdded();
+                        //Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Wort hinzugefügt')),
+                        );
+                        wordController.clear();
+                        translationController.clear();
+                        setState(() {
+                          alreadyEnteredAWord = true;
+                        });
+                      }
+                    },
+                    child: const Text('Hinzufügen'),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -89,7 +162,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     alignment: Alignment.center,
     padding: const EdgeInsets.all(10),
-
     child: Text(
       WordService.languages[index],
       style: TextStyle(
@@ -103,19 +175,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentLang = WordService.languages[selectedLangIndex];
-
+    final currentLanguage = WordService.languages[selectedLangIndex];
+    List<Word> words = WordService.getWordsForLanguage(currentLanguage);
     return Scaffold(
       appBar: AppBar(
         actionsPadding: EdgeInsets.only(right: 8),
-        title: Text(currentLang),
+        title: Text(currentLanguage),
         actions: [
           ElevatedButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => LearnModeScreen(language: currentLang),
+                  builder: (_) => LearnScreen(language: currentLanguage),
                 ),
               );
             },
@@ -123,7 +195,129 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: VocScreen(language: currentLang),
+      body: Column(
+        children: [
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(
+                left: 8,
+                right: 8,
+                top: 8,
+                bottom: 75,
+              ),
+              itemCount: words.length,
+              itemBuilder: (context, index) {
+                final word = words[index];
+                final isEditing = editMode[word] ?? false;
+                final wordController = TextEditingController(text: word.word);
+                final translationController = TextEditingController(
+                  text: word.translation,
+                );
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: isEditing
+                              ? Column(
+                                  children: [
+                                    TextField(
+                                      controller: wordController,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Wort',
+                                      ),
+                                      onSubmitted: (_) {
+                                        word.word = wordController.text;
+                                      },
+                                    ),
+                                    TextField(
+                                      controller: translationController,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Übersetzung',
+                                      ),
+                                      onSubmitted: (_) {
+                                        word.translation =
+                                            translationController.text;
+                                      },
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      word.word,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    Text(
+                                      word.translation,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                        Column(
+                          children: [
+                            IconButton(
+                              icon: isEditing
+                                  ? const Icon(Icons.delete, color: Colors.red)
+                                  : Icon(
+                                      word.learned
+                                          ? Icons.check_circle
+                                          : Icons.radio_button_unchecked,
+                                      color: word.learned
+                                          ? Colors.green
+                                          : Colors.grey,
+                                    ),
+                              onPressed: () {
+                                setState(() {
+                                  if (isEditing) {
+                                    WordService.removeWord(word);
+                                  } else {
+                                    word.learned = !word.learned;
+                                    WordService.saveWords();
+                                  }
+                                });
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                isEditing ? Icons.check : Icons.edit,
+                                color: isEditing ? Colors.green : Colors.grey,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  if (isEditing) {
+                                    // Eingaben übernehmen
+                                    word.word = wordController.text;
+                                    word.translation =
+                                        translationController.text;
+                                    // Edit-Modus beenden
+                                    editMode[word] = false;
+
+                                    // JETZT speichern
+                                    WordService.update();
+                                  } else {
+                                    // Edit-Modus aktivieren
+                                    editMode[word] = true;
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
         child: SizedBox(
@@ -193,6 +387,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showAddWordDialog(
+            context,
+            currentLanguage,
+            onWordAdded: () {
+              setState(() {});
+            },
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
