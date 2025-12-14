@@ -124,9 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _deleteLanguageDialog(int index) {
+  Future<void> _deleteLanguageDialog(int index) async {
     final lang = WordService.languages[index];
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sprache löschen'),
@@ -184,11 +184,15 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(currentLanguage),
         actions: [
           IconButton(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.menu),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => LanguagesOverviewScreen()),
+                MaterialPageRoute(
+                  builder: (_) => LanguagesOverviewScreen(
+                    onDeleteLanguage: _deleteLanguageDialog,
+                  ),
+                ),
               );
             },
           ),
@@ -238,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     TextField(
                                       controller: wordController,
                                       decoration: const InputDecoration(
-                                        hintText: 'Wort',
+                                        hintText: 'Word',
                                       ),
                                       onSubmitted: (_) {
                                         word.word = wordController.text;
@@ -247,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     TextField(
                                       controller: translationController,
                                       decoration: const InputDecoration(
-                                        hintText: 'Übersetzung',
+                                        hintText: 'Translation',
                                       ),
                                       onSubmitted: (_) {
                                         word.translation =
@@ -339,11 +343,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     _buildLanguagetile(index),
             scrollDirection: Axis.horizontal,
             onReorder: (int index, int newIndex) {
-              final plusIndex = WordService.languages.length + 1;
-
-              if (newIndex == plusIndex) {
-                _deleteLanguageDialog(index);
-                return;
+              if (newIndex >= WordService.languages.length) {
+                newIndex = WordService.languages.length;
               }
 
               setState(() {

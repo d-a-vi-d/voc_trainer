@@ -36,6 +36,12 @@ class WordService {
     //     saveWords();
   }
 
+  static Future<void> renameLanguage(int index, String newLanguageName) async {
+    WordService.languages[index] = newLanguageName;
+    //TODO checken ob Name existiert
+    //TODO Wörter umspeichern
+  }
+
   static Future<void> saveWords() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = words.map((word) => json.encode(word.toJson())).toList();

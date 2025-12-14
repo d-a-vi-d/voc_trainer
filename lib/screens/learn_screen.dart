@@ -90,7 +90,7 @@ class _LearnScreenState extends State<LearnScreen> {
         title: Text('Lernen: ${widget.language}'),
         actions: [
           IconButton(
-            icon: Icon(Icons.menu, color: Colors.grey),
+            icon: Icon(Icons.settings),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
