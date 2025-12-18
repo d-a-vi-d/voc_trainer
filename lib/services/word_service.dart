@@ -37,9 +37,19 @@ class WordService {
   }
 
   static Future<void> renameLanguage(int index, String newLanguageName) async {
-    WordService.languages[index] = newLanguageName;
-    //TODO checken ob Name existiert
-    //TODO Wörter umspeichern
+    String oldLanguageName = WordService.languages[index];
+
+    //checken ob Name existiert
+    if (!WordService.languages.contains(newLanguageName)) {
+      WordService.languages[index] = newLanguageName;
+      //Wörter umspeichern
+      for (Word word in words)
+        if (word.language == oldLanguageName) {
+          word.language = newLanguageName;
+        }
+    }
+    await saveLanguages();
+    await saveWords();
   }
 
   static Future<void> saveWords() async {

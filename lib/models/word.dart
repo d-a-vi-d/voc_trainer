@@ -1,7 +1,7 @@
 class Word {
   String word;
   String translation;
-  final String language;
+  String language;
   bool learned;
 
   Word({
