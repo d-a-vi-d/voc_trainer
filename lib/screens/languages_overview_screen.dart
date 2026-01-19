@@ -13,8 +13,24 @@ class LanguagesOverviewScreen extends StatefulWidget {
 
 class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
   bool editMode = false;
+  final Map<int, String> languageNameChanges = {};
 
-  void _toggleEditMode() {
+  Future<void> _toggleEditMode() async {
+    if (editMode) {
+      for (final entry in languageNameChanges.entries) {
+        try {
+          await WordService.renameLanguage(entry.key, entry.value);
+        } catch (error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.toString()),
+              //duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+      languageNameChanges.clear();
+    }
     setState(() {
       editMode = !editMode;
     });
@@ -67,9 +83,9 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
                 controller: languageController,
 
                 decoration: const InputDecoration(hintText: 'Language'),
-                onSubmitted: (_) {
+                onChanged: (_) {
                   final String newLanguageName = languageController.text;
-                  WordService.renameLanguage(index, newLanguageName);
+                  languageNameChanges[index] = newLanguageName;
                 },
                 style: TextStyle(fontSize: 20),
               ),

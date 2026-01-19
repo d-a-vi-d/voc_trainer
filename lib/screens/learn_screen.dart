@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:voc_trainer/screens/home_screen.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import '../services/word_service.dart';
@@ -22,15 +23,12 @@ class LearnScreen extends StatefulWidget {
 }
 
 class _LearnScreenState extends State<LearnScreen> {
-  bool showOnlyNotLearned = true;
-
   late List<Word> allWords; // Originalliste für diese Sprache
   late List<Word> shuffledWords; // Gemischte Liste für die Session
   int currentIndex = 0; // Index im shuffledWords
-  bool showHomeLanguage = false;
-
+  bool showHomeLanguage = true;
+  bool showOnlyNotLearned = true;
   LanguageMode currentLanguageMode = LanguageMode.HomeLanguageFirst;
-  //bool randomfirsttranslation = false
 
   @override
   void initState() {
@@ -44,13 +42,46 @@ class _LearnScreenState extends State<LearnScreen> {
     ).where((w) => showOnlyNotLearned ? !w.learned : true).toList();
 
     // Shuffle einmal beim Start
-    shuffledWords = List.from(allWords);
-    shuffledWords.shuffle();
-    currentIndex = 0;
+    setState(() {
+      shuffledWords = List.from(allWords);
+      shuffledWords.shuffle();
+      currentIndex = 0;
+    });
   }
 
   void _next() {
     if (shuffledWords.isEmpty) return;
+    if (currentIndex == shuffledWords.length - 1) {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          title: const Text('Ende der Liste'),
+          content: const Text(
+            'Du hast das Ende der Liste erreicht! Möchtest du von vorne beginnen oder zur Übersicht wechseln?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => HomeScreen()),
+                );
+              },
+              child: const Text('Übersicht'),
+            ),
+            TextButton(
+              onPressed: () {
+                _initLearning();
+                Navigator.pop(context);
+              },
+              child: const Text('Neu starten'),
+            ),
+          ],
+        ),
+      );
+    }
     setState(() {
       currentIndex = (currentIndex + 1) % shuffledWords.length;
       if (currentLanguageMode == LanguageMode.HomeLanguageFirst) {
@@ -65,9 +96,9 @@ class _LearnScreenState extends State<LearnScreen> {
 
   void _previous() {
     if (shuffledWords.isEmpty) return;
+    if (currentIndex == 0) return;
     setState(() {
-      currentIndex =
-          (currentIndex - 1 + shuffledWords.length) % shuffledWords.length;
+      currentIndex = (currentIndex - 1) % shuffledWords.length;
     });
   }
 
@@ -176,7 +207,7 @@ class _LearnScreenState extends State<LearnScreen> {
                                   });
                                 },
                                 selected:
-                                    LanguageMode ==
+                                    currentLanguageMode ==
                                     LanguageMode.HomeLanguageFirst,
                                 text: "home",
                               ),
@@ -190,7 +221,7 @@ class _LearnScreenState extends State<LearnScreen> {
                                   });
                                 },
                                 selected:
-                                    LanguageMode ==
+                                    currentLanguageMode ==
                                     LanguageMode.ForeignLanguageFirst,
                                 text: "foreign",
                               ),
@@ -204,7 +235,7 @@ class _LearnScreenState extends State<LearnScreen> {
                                   });
                                 },
                                 selected:
-                                    LanguageMode ==
+                                    currentLanguageMode ==
                                     LanguageMode.RandomLanguageFirst,
                                 text: "random",
                               ),
@@ -231,14 +262,10 @@ class _LearnScreenState extends State<LearnScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: LinearProgressBar(
                       minHeight: 20,
-                      maxSteps: WordService.getWordsForLanguage(
-                        widget.language,
-                      ).length,
+                      maxSteps: shuffledWords.length,
                       progressType: LinearProgressBar
                           .progressTypeLinear, // Use Linear progress
-                      currentStep: WordService.getWordsForLanguage(
-                        widget.language,
-                      ).where((w) => w.learned).length,
+                      currentStep: currentIndex,
                       progressColor: Colors.green,
                       backgroundColor: const Color.fromARGB(255, 208, 208, 208),
                       borderRadius: BorderRadius.circular(50), //  NEW

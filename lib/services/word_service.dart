@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/word.dart';
 
@@ -38,15 +39,19 @@ class WordService {
 
   static Future<void> renameLanguage(int index, String newLanguageName) async {
     String oldLanguageName = WordService.languages[index];
-
+    if (newLanguageName.isEmpty) {
+      return;
+    }
     //checken ob Name existiert
-    if (!WordService.languages.contains(newLanguageName)) {
-      WordService.languages[index] = newLanguageName;
-      //Wörter umspeichern
-      for (Word word in words)
-        if (word.language == oldLanguageName) {
-          word.language = newLanguageName;
-        }
+    if (WordService.languages.contains(newLanguageName)) {
+      throw Exception("There is already a language with this name!");
+    }
+    WordService.languages[index] = newLanguageName;
+    //Wörter umspeichern
+    for (Word word in words) {
+      if (word.language == oldLanguageName) {
+        word.language = newLanguageName;
+      }
     }
     await saveLanguages();
     await saveWords();

@@ -22,4 +22,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// sprachen overview screen
+// ✅sprachen overview screen
+// ✔️renaming a language - checking the check in the appbar - new language name not saved
+// ✅which language first - nothing is green
+// state management (wann wörter updaten - zb "sterne exkludieren")
+  // always foreign language when going into learning mode - should regard the settings (shared_preferences)
+  // is aber geil wenn man das letzte wort noch da hat
+// supabase + login
+// ✅cycle managen (progress bar zeigt an wo im cycle man ist, "durchgang fertig - neu beginnen?")
