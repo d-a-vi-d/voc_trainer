@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/word.dart';
 
@@ -99,5 +98,15 @@ class WordService {
 
   static List<Word> getWordsForLanguage(String language) {
     return words.where((w) => w.language == language).toList();
+  }
+
+  static List<Word> getWordsForSearch(
+    String currentLanguage,
+    String searchInput,
+  ) {
+    return words.where((w) {
+      return w.language == currentLanguage &&
+          (w.word.contains(searchInput) || w.translation.contains(searchInput));
+    }).toList();
   }
 }

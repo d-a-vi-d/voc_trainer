@@ -13,6 +13,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final Map<Word, bool> editMode = {};
+  bool searchMode = false;
+  final controller = TextEditingController();
   int selectedLangIndex = 0;
   Future<void> showAddWordDialog(
     BuildContext context,
@@ -177,37 +179,76 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final currentLanguage = WordService.languages[selectedLangIndex];
-    List<Word> words = WordService.getWordsForLanguage(currentLanguage);
+    late List<Word> words;
+    if (searchMode) {
+      final String searchInput = controller.text;
+      words = WordService.getWordsForSearch(currentLanguage, searchInput);
+    } else {
+      words = WordService.getWordsForLanguage(currentLanguage);
+    }
     return Scaffold(
       appBar: AppBar(
         actionsPadding: EdgeInsets.only(right: 8),
-        title: Text(currentLanguage),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => LanguagesOverviewScreen(
-                    onDeleteLanguage: _deleteLanguageDialog,
+        title: Row(
+          children: [
+            Text(currentLanguage),
+            if (searchMode) ...[
+              SizedBox(width: 20),
+              Expanded(
+                child: SizedBox(
+                  width: 70,
+                  child: TextField(
+                    autofocus: true,
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      labelText: 'Suche',
+                      isDense: true,
+                    ),
+                    onChanged: (_) {
+                      setState(() {});
+                    },
                   ),
                 ),
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton(
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(searchMode ? Icons.close : Icons.search_rounded),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => LearnScreen(language: currentLanguage),
-                ),
-              );
+              setState(() {
+                searchMode = !searchMode;
+              });
             },
-            child: const Text('Lernen'),
           ),
+          if (!searchMode) ...[
+            IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LanguagesOverviewScreen(
+                      onDeleteLanguage: _deleteLanguageDialog,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LearnScreen(language: currentLanguage),
+                  ),
+                );
+              },
+              child: const Text('Lernen'),
+            ),
+          ],
         ],
       ),
       body: Column(
@@ -382,7 +423,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _addLanguageDialog();
                   setState(() {});
                 },
-                onLongPress: () {},
                 key: Key('add/ delete Button'),
                 child: Container(
                   margin: const EdgeInsets.all(5),

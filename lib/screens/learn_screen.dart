@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:voc_trainer/screens/home_screen.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import '../services/word_service.dart';
@@ -64,10 +63,8 @@ class _LearnScreenState extends State<LearnScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => HomeScreen()),
-                );
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               child: const Text('Übersicht'),
             ),
