@@ -30,5 +30,6 @@ class MyApp extends StatelessWidget {
   // is aber geil wenn man das letzte wort noch da hat
 // supabase + login
 // ✅cycle managen (progress bar zeigt an wo im cycle man ist, "durchgang fertig - neu beginnen?")
-// Suchfunktion
+// ✅Suchfunktion
 // ✅"Übersicht" Button so machen wie Pfeil zurück Button
+// ✔️epische Suchfunktion mit similarities

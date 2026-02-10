@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/word.dart';
 
@@ -106,7 +107,10 @@ class WordService {
   ) {
     return words.where((w) {
       return w.language == currentLanguage &&
-          (w.word.contains(searchInput) || w.translation.contains(searchInput));
+              (w.word.contains(searchInput) ||
+                  w.translation.contains(searchInput)) ||
+          (partialRatio(w.word, searchInput) > 70 ||
+              partialRatio(w.translation, searchInput) > 70);
     }).toList();
   }
 }

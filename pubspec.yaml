@@ -35,6 +35,7 @@ dependencies:
   drag_and_drop_lists: ^0.4.0
   linear_progress_bar: "^1.2.0"
   riverpod: ^3.2.0
+  fuzzywuzzy: ^1.2.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
