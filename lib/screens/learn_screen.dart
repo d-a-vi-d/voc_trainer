@@ -307,9 +307,11 @@ class _LearnScreenState extends State<LearnScreen> {
                       ),
                       IconButton(
                         icon: Icon(
-                          currentWord.learned ? Icons.star : Icons.star_border,
+                          currentWord.learned
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
                           color: currentWord.learned
-                              ? Colors.amber
+                              ? Colors.green
                               : Colors.grey,
                           size: 48,
                         ),
