@@ -22,9 +22,7 @@ class WordService {
   static Future<void> loadWords() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = prefs.getStringList(_key) ?? [];
-    words = jsonList
-        .map((jsonWord) => Word.fromJson(json.decode(jsonWord)))
-        .toList();
+    words = jsonList.map((jsonWord) => Word.fromJson(json.decode(jsonWord))).toList();
 
     //     final quizlet = """""";
     //     final wordsRaw = quizlet.split("newline");
@@ -101,16 +99,13 @@ class WordService {
     return words.where((w) => w.language == language).toList();
   }
 
-  static List<Word> getWordsForSearch(
-    String currentLanguage,
-    String searchInput,
-  ) {
+  static List<Word> getWordsForSearch(String currentLanguage, String searchInput) {
     return words.where((w) {
-      return w.language == currentLanguage &&
-              (w.word.contains(searchInput) ||
-                  w.translation.contains(searchInput)) ||
-          (partialRatio(w.word, searchInput) > 70 ||
-              partialRatio(w.translation, searchInput) > 70);
+      bool matchesExactly = w.word.toLowerCase().contains(searchInput) || w.translation.toLowerCase().contains(searchInput);
+      bool matchesMostly =
+          partialRatio(searchInput.toLowerCase(), w.word.toLowerCase()) > 70 ||
+          partialRatio(searchInput.toLowerCase(), w.translation.toLowerCase()) > 70;
+      return w.language == currentLanguage && matchesExactly || matchesMostly;
     }).toList();
   }
 }
