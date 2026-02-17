@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/signup_screen.dart';
+import 'screens/login_screen.dart';
 import 'services/word_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WordService.load();
-  await Supabase.initialize(url: 'https://kvlspkkccigktqtwpzug.supabase.co', anonKey: 'sb_publishable_9_EfB6LSyfHNAE3YqQThnw_ctnO8fh-');
+  await Supabase.initialize(
+    url: 'https://kvlspkkccigktqtwpzug.supabase.co',
+    anonKey: 'sb_publishable_9_EfB6LSyfHNAE3YqQThnw_ctnO8fh-',
+  );
 
   runApp(const MyApp());
 }
@@ -17,6 +21,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supabase = Supabase.instance.client;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Vokabeltrainer',
@@ -28,7 +33,7 @@ class MyApp extends StatelessWidget {
           if (session != null) {
             return const HomeScreen();
           } else {
-            return const SignupScreen();
+            return const LoginScreen();
           }
         },
       ),
@@ -44,6 +49,7 @@ class MyApp extends StatelessWidget {
   //https://supabase.com/dashboard/project/kvlspkkccigktqtwpzug/settings/api-keys
 
 // state management (wann wörter updaten - zb "sterne exkludieren")
+  // onAuthStateChange managen statt navigator.pushReplacement
   // always foreign language when going into learning mode - should regard the settings (shared_preferences)
   // is aber geil wenn man das letzte wort noch da hat
 

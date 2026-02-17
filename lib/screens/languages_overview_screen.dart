@@ -11,7 +11,8 @@ class LanguagesOverviewScreen extends StatefulWidget {
   final Future<void> Function(int index) onDeleteLanguage;
   const LanguagesOverviewScreen({super.key, required this.onDeleteLanguage});
 
-  State<LanguagesOverviewScreen> createState() => _LanguagesOverviewScreenState();
+  State<LanguagesOverviewScreen> createState() =>
+      _LanguagesOverviewScreenState();
 }
 
 class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
@@ -40,10 +41,16 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
   }
 
   Widget _buildLanguagetile(int index) {
-    int learned = WordService.getWordsForLanguage(WordService.languages[index]).where((w) => w.learned).length.toInt();
-    int total = WordService.getWordsForLanguage(WordService.languages[index]).length.toInt();
+    int learned = WordService.getWordsForLanguage(
+      WordService.languages[index],
+    ).where((w) => w.learned).length.toInt();
+    int total = WordService.getWordsForLanguage(
+      WordService.languages[index],
+    ).length.toInt();
     double progress = learned / total;
-    final languageController = TextEditingController(text: WordService.languages[index]);
+    final languageController = TextEditingController(
+      text: WordService.languages[index],
+    );
     return Container(
       height: 70,
       margin: const EdgeInsets.all(5),
@@ -108,14 +115,20 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
     return Scaffold(
       appBar: AppBar(
         actionsPadding: EdgeInsets.only(right: 8),
-        title: Text("Language Overview"),
+        title: Text("Your Languages"),
         actions: [
-          IconButton(onPressed: _toggleEditMode, icon: editMode ? Icon(Icons.check) : Icon(Icons.edit)),
+          IconButton(
+            onPressed: _toggleEditMode,
+            icon: editMode ? Icon(Icons.check) : Icon(Icons.edit),
+          ),
           IconButton(
             icon: Icon(Icons.logout),
             onPressed: () async {
               await supabase.auth.signOut();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => LoginScreen()),
+                (route) => false,
+              );
             },
           ),
         ],
@@ -125,7 +138,14 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
         child: Container(
           padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: Column(
-            children: <Widget>[for (int index = 0; index < WordService.languages.length; index += 1) Container(child: _buildLanguagetile(index))],
+            children: <Widget>[
+              for (
+                int index = 0;
+                index < WordService.languages.length;
+                index += 1
+              )
+                Container(child: _buildLanguagetile(index)),
+            ],
           ),
         ),
       ),
