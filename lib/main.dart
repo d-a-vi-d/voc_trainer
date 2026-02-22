@@ -45,15 +45,16 @@ class MyApp extends StatelessWidget {
 
 
 // supabase + login
-  //https://supabase.com/docs/reference/dart/select
-  //https://supabase.com/dashboard/project/kvlspkkccigktqtwpzug/settings/api-keys
 
 // state management (wann wörter updaten - zb "sterne exkludieren")
   // onAuthStateChange managen statt navigator.pushReplacement
   // always foreign language when going into learning mode - should regard the settings (shared_preferences)
+  // settings speichern
   // is aber geil wenn man das letzte wort noch da hat
 
 // Notizen Funktion
+// mehrere Sprachen gleichzeitig
+// immer Lernbündel
 
 
 // ✔️renaming a language - checking the check in the appbar - new language name not saved

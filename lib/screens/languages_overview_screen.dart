@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:voc_trainer/services/word_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:voc_trainer/screens/login_screen.dart';
-
-final supabase = Supabase.instance.client;
 
 class LanguagesOverviewScreen extends StatefulWidget {
   //final
@@ -120,16 +116,6 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
           IconButton(
             onPressed: _toggleEditMode,
             icon: editMode ? Icon(Icons.check) : Icon(Icons.edit),
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await supabase.auth.signOut();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-                (route) => false,
-              );
-            },
           ),
         ],
       ),

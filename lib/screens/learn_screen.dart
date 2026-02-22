@@ -6,7 +6,11 @@ import '../models/word.dart';
 import '../services/word_service.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 
-enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
+enum LanguageMode {
+  HomeLanguageFirst,
+  ForeignLanguageFirst,
+  RandomLanguageFirst,
+}
 
 class LearnScreen extends StatefulWidget {
   final String language;
@@ -32,7 +36,9 @@ class _LearnScreenState extends State<LearnScreen> {
   }
 
   void _initLearning() {
-    allWords = WordService.getWordsForLanguage(widget.language).where((w) => showOnlyNotLearned ? !w.learned : true).toList();
+    allWords = WordService.getWordsForLanguage(
+      widget.language,
+    ).where((w) => showOnlyNotLearned ? !w.learned : true).toList();
 
     // Shuffle einmal beim Start
     setState(() {
@@ -51,7 +57,9 @@ class _LearnScreenState extends State<LearnScreen> {
         builder: (BuildContext context) => AlertDialog(
           actionsAlignment: MainAxisAlignment.spaceBetween,
           title: const Text('Ende der Liste'),
-          content: const Text('Du hast das Ende der Liste erreicht! Möchtest du von vorne beginnen oder zur Übersicht wechseln?'),
+          content: const Text(
+            'Du hast das Ende der Liste erreicht! Möchtest du von vorne beginnen oder zur Übersicht wechseln?',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -125,19 +133,25 @@ class _LearnScreenState extends State<LearnScreen> {
                             width: 40,
                             height: 4,
                             margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(color: Colors.grey[500], borderRadius: BorderRadius.circular(2)),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[500],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
 
                           Text(
                             "Show already learned?",
                             style: TextStyle(
                               fontSize: 20, // Größerer Text
-                              fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
+                              fontWeight: FontWeight
+                                  .bold, // Fett für bessere Lesbarkeit
                               color: Colors.black87, // Weicheres Schwarz
                               letterSpacing: 0.5, // Leichter Buchstabenabstand
                             ),
                           ),
-                          const SizedBox(height: 6), // Mehr Abstand zwischen Text und Buttons
+                          const SizedBox(
+                            height: 6,
+                          ), // Mehr Abstand zwischen Text und Buttons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -169,7 +183,12 @@ class _LearnScreenState extends State<LearnScreen> {
 
                           Text(
                             "Which language first?",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: 0.5),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Row(
@@ -179,33 +198,42 @@ class _LearnScreenState extends State<LearnScreen> {
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.HomeLanguageFirst;
+                                    currentLanguageMode =
+                                        LanguageMode.HomeLanguageFirst;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.HomeLanguageFirst,
+                                selected:
+                                    currentLanguageMode ==
+                                    LanguageMode.HomeLanguageFirst,
                                 text: "home",
                               ),
                               //show foreign language first
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.ForeignLanguageFirst;
+                                    currentLanguageMode =
+                                        LanguageMode.ForeignLanguageFirst;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.ForeignLanguageFirst,
+                                selected:
+                                    currentLanguageMode ==
+                                    LanguageMode.ForeignLanguageFirst,
                                 text: "foreign",
                               ),
                               //random language first
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.RandomLanguageFirst;
+                                    currentLanguageMode =
+                                        LanguageMode.RandomLanguageFirst;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.RandomLanguageFirst,
+                                selected:
+                                    currentLanguageMode ==
+                                    LanguageMode.RandomLanguageFirst,
                                 text: "random",
                               ),
                             ],
@@ -232,7 +260,8 @@ class _LearnScreenState extends State<LearnScreen> {
                     child: LinearProgressBar(
                       minHeight: 20,
                       maxSteps: shuffledWords.length,
-                      progressType: LinearProgressBar.progressTypeLinear, // Use Linear progress
+                      progressType: LinearProgressBar
+                          .progressTypeLinear, // Use Linear progress
                       currentStep: currentIndex,
                       progressColor: Colors.green,
                       backgroundColor: const Color.fromARGB(255, 208, 208, 208),
@@ -243,10 +272,17 @@ class _LearnScreenState extends State<LearnScreen> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 400),
                     child: ElevatedButton(
-                      key: ValueKey(showHomeLanguage ? currentWord!.translation : currentWord!.word),
+                      key: ValueKey(
+                        showHomeLanguage
+                            ? currentWord!.translation
+                            : currentWord!.word,
+                      ),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(220, 100),
-                        textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                        textStyle: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
                         elevation: 4,
                       ),
                       onPressed: () {
@@ -254,23 +290,37 @@ class _LearnScreenState extends State<LearnScreen> {
                           showHomeLanguage = !showHomeLanguage;
                         });
                       },
-                      child: Text(showHomeLanguage ? currentWord.translation : currentWord.word),
+                      child: Text(
+                        showHomeLanguage
+                            ? currentWord.translation
+                            : currentWord.word,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(icon: const Icon(Icons.arrow_back, size: 48), onPressed: _previous),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, size: 48),
+                        onPressed: _previous,
+                      ),
                       IconButton(
                         icon: Icon(
-                          currentWord.learned ? Icons.check_circle : Icons.radio_button_unchecked,
-                          color: currentWord.learned ? Colors.green : Colors.grey,
+                          currentWord.learned
+                              ? Icons.check_circle
+                              : Icons.radio_button_unchecked,
+                          color: currentWord.learned
+                              ? Colors.green
+                              : Colors.grey,
                           size: 48,
                         ),
                         onPressed: _toggleLearned,
                       ),
-                      IconButton(icon: const Icon(Icons.arrow_forward, size: 48), onPressed: _next),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward, size: 48),
+                        onPressed: _next,
+                      ),
                     ],
                   ),
                 ],

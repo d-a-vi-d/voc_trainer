@@ -50,7 +50,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     border: OutlineInputBorder(),
                     suffixIcon: IconButton(
                       onPressed: () {
-                        hiddenPassword = !hiddenPassword;
+                        setState(() {
+                          hiddenPassword = !hiddenPassword;
+                        });
                       },
                       icon: Icon(
                         hiddenPassword
