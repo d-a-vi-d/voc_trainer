@@ -163,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     }
                   },
-                  selected: false, // kann man dynamisch machen, falls nötig
+                  selected: false,
                   text: "Erstellen",
                 ),
                 const SizedBox(width: 10),
@@ -177,16 +177,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           content: Text("Backup erfolgreich geladen!"),
                         ),
                       );
-                      setState(
-                        () {},
-                      ); // Optional, falls UI nach Import aktualisiert werden soll
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Fehler beim Backup laden: $e")),
                       );
                     }
                   },
-                  selected: false, // kann man dynamisch machen, falls nötig
+                  selected: false,
                   text: "Laden",
                 ),
               ],

@@ -240,7 +240,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                  );
+                  ).then((_) {
+                    setState(() {});
+                  });
                 }
               },
               itemBuilder: (context) => const [

@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
 }
 
 
+// ✔️export und import machen
 
 // supabase + login
 
@@ -55,6 +56,8 @@ class MyApp extends StatelessWidget {
 // Notizen Funktion
 // mehrere Sprachen gleichzeitig
 // immer Lernbündel
+// nach hinzufügen eines wortes, weiter mim word feld
+// switch button zwischen word und translation
 
 
 // ✔️renaming a language - checking the check in the appbar - new language name not saved
