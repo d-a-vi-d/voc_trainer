@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
 
 
 
-// supabase + login
+
 
 // state management (wann wörter updaten - zb "sterne exkludieren")
   // onAuthStateChange managen statt navigator.pushReplacement
@@ -52,18 +52,17 @@ class MyApp extends StatelessWidget {
   // settings speichern
   // is aber geil wenn man das letzte wort noch da hat
 
-// Notizen Funktion
+// supabase
+
 // mehrere Sprachen gleichzeitig
 // immer Lernbündel
-// nach hinzufügen eines wortes, weiter mim word feld
-// switch button zwischen word und translation
-// suche leeren nach x geclicked
 
 
 // ✔️renaming a language - checking the check in the appbar - new language name not saved
 // ✔️epische Suchfunktion mit similarities
 
-
+// ✅suche leeren nach x geclicked
+// ✅nach hinzufügen eines wortes, weiter mim word feld
 // ✅sprachen overview screen
 // ✅cycle managen (progress bar zeigt an wo im cycle man ist, "durchgang fertig - neu beginnen?")
 // ✅Suchfunktion

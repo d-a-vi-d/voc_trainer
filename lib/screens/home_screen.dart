@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final Map<Word, bool> editMode = {};
   bool searchMode = false;
-  final controller = TextEditingController();
+  final searchController = TextEditingController();
   int selectedLangIndex = 0;
 
   Future<void> showAddWordDialog(
@@ -65,8 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       final term = termController.text.trim();
                       final definition = definitionController.text.trim();
                       if (term.isNotEmpty && definition.isNotEmpty) {
-                        //TODO Addword fixen
-
                         WordService.addWord(
                           Word(term: term, definition: definition, language: currentLanguage),
                         );
@@ -91,25 +89,27 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     myFocusNode.dispose();
+    termController.dispose();
+    definitionController.dispose();
     setState(() {});
   }
 
   void _addLanguageDialog() {
-    final controller = TextEditingController();
+    final addLanguageController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sprache hinzufügen'),
         content: TextField(
           autofocus: true,
-          controller: controller,
+          controller: addLanguageController,
           decoration: const InputDecoration(labelText: 'Sprache'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
           TextButton(
             onPressed: () {
-              final newLang = controller.text.trim();
+              final newLang = addLanguageController.text.trim();
               if (newLang.isNotEmpty) {
                 WordService.addLanguage(newLang);
                 setState(() {});
@@ -171,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final currentLanguage = WordService.languages[selectedLangIndex];
     late List<Word> words;
     if (searchMode) {
-      final String searchInput = controller.text;
+      final String searchInput = searchController.text;
       words = WordService.getWordsForSearch(currentLanguage, searchInput);
     } else {
       words = WordService.getWordsForLanguage(currentLanguage);
@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 70,
                   child: TextField(
                     autofocus: true,
-                    controller: controller,
+                    controller: searchController,
                     decoration: const InputDecoration(labelText: 'Suche', isDense: true),
                     onChanged: (_) {
                       setState(() {});
@@ -204,6 +204,9 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(searchMode ? Icons.close : Icons.search_rounded),
             onPressed: () {
+              if (searchMode) {
+                searchController.clear();
+              }
               setState(() {
                 searchMode = !searchMode;
               });
@@ -259,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 final word = words[index];
                 final isEditing = editMode[word] ?? false;
-                final wordController = TextEditingController(text: word.term);
+                final termController = TextEditingController(text: word.term);
                 final definitionController = TextEditingController(text: word.definition);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 4),
@@ -272,10 +275,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? Column(
                                   children: [
                                     TextField(
-                                      controller: wordController,
+                                      controller: termController,
                                       decoration: const InputDecoration(hintText: 'Word'),
                                       onSubmitted: (_) {
-                                        word.term = wordController.text;
+                                        word.term = termController.text;
                                       },
                                     ),
                                     TextField(
@@ -326,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 setState(() {
                                   if (isEditing) {
                                     // Eingaben übernehmen
-                                    word.term = wordController.text;
+                                    word.term = termController.text;
                                     word.definition = definitionController.text;
                                     // Edit-Modus beenden
                                     editMode[word] = false;
@@ -422,5 +425,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 }
