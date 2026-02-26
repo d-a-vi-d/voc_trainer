@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
-import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
 import 'services/word_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
 }
 
 
-// ✔️export und import machen
+
 
 // supabase + login
 
@@ -58,6 +57,7 @@ class MyApp extends StatelessWidget {
 // immer Lernbündel
 // nach hinzufügen eines wortes, weiter mim word feld
 // switch button zwischen word und translation
+// suche leeren nach x geclicked
 
 
 // ✔️renaming a language - checking the check in the appbar - new language name not saved
@@ -69,4 +69,4 @@ class MyApp extends StatelessWidget {
 // ✅Suchfunktion
 // ✅which language first - nothing is green
 // ✅"Übersicht" Button so machen wie Pfeil zurück Button
-
+// ✅export und import machen

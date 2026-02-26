@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:voc_trainer/services/word_service.dart';
 
 class LanguagesOverviewScreen extends StatefulWidget {
-  //final
-
   final Future<void> Function(int index) onDeleteLanguage;
   const LanguagesOverviewScreen({super.key, required this.onDeleteLanguage});
 

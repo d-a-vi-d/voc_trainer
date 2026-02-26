@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/word.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
 
 class WordService {
   static const _key = 'words';
@@ -67,6 +70,10 @@ class WordService {
   }
 
   static Future<void> addWord(Word word) async {
+    //await supabase.from('words').insert({'word': 'hallo', 'translation': 'hi', 'language_id': '1'});
+    //await supabase.from('words').insert({word});
+
+    //TODO Stimmt das so?
     words.add(word);
     await saveWords();
   }
@@ -101,10 +108,12 @@ class WordService {
 
   static List<Word> getWordsForSearch(String currentLanguage, String searchInput) {
     return words.where((w) {
-      bool matchesExactly = w.word.toLowerCase().contains(searchInput) || w.translation.toLowerCase().contains(searchInput);
+      bool matchesExactly =
+          w.term.toLowerCase().contains(searchInput) ||
+          w.definition.toLowerCase().contains(searchInput);
       bool matchesMostly =
-          partialRatio(searchInput.toLowerCase(), w.word.toLowerCase()) > 70 ||
-          partialRatio(searchInput.toLowerCase(), w.translation.toLowerCase()) > 70;
+          partialRatio(searchInput.toLowerCase(), w.term.toLowerCase()) > 70 ||
+          partialRatio(searchInput.toLowerCase(), w.definition.toLowerCase()) > 70;
       return w.language == currentLanguage && matchesExactly || matchesMostly;
     }).toList();
   }

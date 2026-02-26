@@ -17,14 +17,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool searchMode = false;
   final controller = TextEditingController();
   int selectedLangIndex = 0;
+
   Future<void> showAddWordDialog(
     BuildContext context,
     String currentLanguage, {
     VoidCallback? onWordAdded,
   }) async {
+    final FocusNode myFocusNode = FocusNode();
     bool alreadyEnteredAWord = false;
-    final wordController = TextEditingController();
-    final translationController = TextEditingController();
+    final termController = TextEditingController();
+    final definitionController = TextEditingController();
     await showDialog(
       barrierDismissible: false,
       context: context,
@@ -34,13 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              focusNode: myFocusNode,
               autofocus: true,
-              controller: wordController,
-              decoration: const InputDecoration(labelText: 'Wort'),
+              controller: termController,
+              decoration: const InputDecoration(labelText: 'Term'),
             ),
+
             TextField(
-              controller: translationController,
-              decoration: const InputDecoration(labelText: 'Übersetzung'),
+              controller: definitionController,
+              decoration: const InputDecoration(labelText: 'Definition'),
             ),
           ],
         ),
@@ -51,32 +55,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                     child: Text(alreadyEnteredAWord ? 'Fertig' : 'Abbrechen'),
                   ),
                   TextButton(
                     onPressed: () {
-                      final word = wordController.text.trim();
-                      final translation = translationController.text.trim();
-                      if (word.isNotEmpty && translation.isNotEmpty) {
-                        WordService.words.add(
-                          Word(
-                            word: word,
-                            translation: translation,
-                            language: currentLanguage,
-                          ),
+                      final term = termController.text.trim();
+                      final definition = definitionController.text.trim();
+                      if (term.isNotEmpty && definition.isNotEmpty) {
+                        //TODO Addword fixen
+
+                        WordService.addWord(
+                          Word(term: term, definition: definition, language: currentLanguage),
                         );
-                        WordService.saveWords();
-                        if (onWordAdded != null) onWordAdded();
-                        //Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Wort hinzugefügt')),
-                        );
-                        wordController.clear();
-                        translationController.clear();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('Wort hinzugefügt')));
+                        termController.clear();
+                        definitionController.clear();
                         setState(() {
                           alreadyEnteredAWord = true;
                         });
+                        myFocusNode.requestFocus();
                       }
                     },
                     child: const Text('Hinzufügen'),
@@ -88,11 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
+    myFocusNode.dispose();
+    setState(() {});
   }
 
   void _addLanguageDialog() {
@@ -107,10 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: const InputDecoration(labelText: 'Sprache'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
           TextButton(
             onPressed: () {
               final newLang = controller.text.trim();
@@ -133,14 +129,9 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sprache löschen'),
-        content: Text(
-          'Möchtest du "$lang" und alle zugehörigen Wörter wirklich löschen?',
-        ),
+        content: Text('Möchtest du "$lang" und alle zugehörigen Wörter wirklich löschen?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Abbrechen'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
           TextButton(
             onPressed: () async {
               if (index <= selectedLangIndex) {
@@ -170,9 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
       WordService.languages[index],
       style: TextStyle(
         fontSize: 20,
-        fontWeight: index == selectedLangIndex
-            ? FontWeight.bold
-            : FontWeight.normal,
+        fontWeight: index == selectedLangIndex ? FontWeight.bold : FontWeight.normal,
       ),
     ),
   );
@@ -201,10 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: TextField(
                     autofocus: true,
                     controller: controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Suche',
-                      isDense: true,
-                    ),
+                    decoration: const InputDecoration(labelText: 'Suche', isDense: true),
                     onChanged: (_) {
                       setState(() {});
                     },
@@ -231,9 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => LanguagesOverviewScreen(
-                        onDeleteLanguage: _deleteLanguageDialog,
-                      ),
+                      builder: (_) =>
+                          LanguagesOverviewScreen(onDeleteLanguage: _deleteLanguageDialog),
                     ),
                   );
                 } else if (value == "settings") {
@@ -256,9 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => LearnScreen(language: currentLanguage),
-                  ),
+                  MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage)),
                 );
               },
               child: const Text('Lernen'),
@@ -271,20 +254,13 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(
-                left: 8,
-                right: 8,
-                top: 8,
-                bottom: 75,
-              ),
+              padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 75),
               itemCount: words.length,
               itemBuilder: (context, index) {
                 final word = words[index];
                 final isEditing = editMode[word] ?? false;
-                final wordController = TextEditingController(text: word.word);
-                final translationController = TextEditingController(
-                  text: word.translation,
-                );
+                final wordController = TextEditingController(text: word.term);
+                final definitionController = TextEditingController(text: word.definition);
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   child: Padding(
@@ -297,21 +273,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     TextField(
                                       controller: wordController,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Word',
-                                      ),
+                                      decoration: const InputDecoration(hintText: 'Word'),
                                       onSubmitted: (_) {
-                                        word.word = wordController.text;
+                                        word.term = wordController.text;
                                       },
                                     ),
                                     TextField(
-                                      controller: translationController,
-                                      decoration: const InputDecoration(
-                                        hintText: 'Translation',
-                                      ),
+                                      controller: definitionController,
+                                      decoration: const InputDecoration(hintText: 'Definition'),
                                       onSubmitted: (_) {
-                                        word.translation =
-                                            translationController.text;
+                                        word.definition = definitionController.text;
                                       },
                                     ),
                                   ],
@@ -319,14 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               : Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      word.word,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                    Text(
-                                      word.translation,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
+                                    Text(word.term, style: const TextStyle(fontSize: 16)),
+                                    Text(word.definition, style: const TextStyle(fontSize: 14)),
                                   ],
                                 ),
                         ),
@@ -339,9 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       word.learned
                                           ? Icons.check_circle
                                           : Icons.radio_button_unchecked,
-                                      color: word.learned
-                                          ? Colors.green
-                                          : Colors.grey,
+                                      color: word.learned ? Colors.green : Colors.grey,
                                     ),
                               onPressed: () {
                                 setState(() {
@@ -363,9 +326,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 setState(() {
                                   if (isEditing) {
                                     // Eingaben übernehmen
-                                    word.word = wordController.text;
-                                    word.translation =
-                                        translationController.text;
+                                    word.term = wordController.text;
+                                    word.definition = definitionController.text;
                                     // Edit-Modus beenden
                                     editMode[word] = false;
 
@@ -394,9 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SizedBox(
           height: 90,
           child: ReorderableListView(
-            proxyDecorator:
-                (Widget child, int index, Animation<double> animation) =>
-                    _buildLanguagetile(index),
+            proxyDecorator: (Widget child, int index, Animation<double> animation) =>
+                _buildLanguagetile(index),
             scrollDirection: Axis.horizontal,
             onReorder: (int index, int newIndex) {
               if (newIndex >= WordService.languages.length) {
@@ -405,25 +366,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
               setState(() {
                 if (index < newIndex) newIndex -= 1;
-                final previouslySelected =
-                    WordService.languages[selectedLangIndex];
+                final previouslySelected = WordService.languages[selectedLangIndex];
                 final String item = WordService.languages.removeAt(index);
                 WordService.languages.insert(newIndex, item);
 
-                selectedLangIndex = WordService.languages.indexOf(
-                  previouslySelected,
-                );
+                selectedLangIndex = WordService.languages.indexOf(previouslySelected);
                 if (selectedLangIndex == -1) selectedLangIndex = 0;
 
                 WordService.saveLanguages();
               });
             },
             children: <Widget>[
-              for (
-                int index = 0;
-                index < WordService.languages.length;
-                index += 1
-              )
+              for (int index = 0; index < WordService.languages.length; index += 1)
                 GestureDetector(
                   onTap: () {
                     setState(() {
