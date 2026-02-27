@@ -4,6 +4,7 @@ import 'learn_screen.dart';
 import '../services/word_service.dart';
 import '../models/word.dart';
 import 'package:voc_trainer/screens/settings_screen.dart';
+import 'package:voc_trainer/widgets/word_tile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final Map<Word, bool> editMode = {};
   bool searchMode = false;
   final searchController = TextEditingController();
   int selectedLangIndex = 0;
@@ -88,9 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-    myFocusNode.dispose();
-    termController.dispose();
-    definitionController.dispose();
+
     setState(() {});
   }
 
@@ -261,6 +259,15 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: words.length,
               itemBuilder: (context, index) {
                 final word = words[index];
+                return WordTile(
+                  key: ValueKey('${word.language}_${word.term}'),
+                  word: word,
+                  onDelete: () {
+                    setState(() {});
+                  },
+                );
+                /*
+                
                 final isEditing = editMode[word] ?? false;
                 final termController = TextEditingController(text: word.term);
                 final definitionController = TextEditingController(text: word.definition);
@@ -348,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                );
+                );*/
               },
             ),
           ),
