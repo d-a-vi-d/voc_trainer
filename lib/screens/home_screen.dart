@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actionsPadding: EdgeInsets.only(right: 8),
         title: Row(
           children: [
-            Text(currentLanguage),
+            Expanded(child: Text(currentLanguage, overflow: TextOverflow.ellipsis)),
             if (searchMode) ...[
               SizedBox(width: 20),
               Expanded(

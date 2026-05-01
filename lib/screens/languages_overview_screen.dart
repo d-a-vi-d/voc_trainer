@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:voc_trainer/services/word_service.dart';
 
 class LanguagesOverviewScreen extends StatefulWidget {
   final Future<void> Function(int index) onDeleteLanguage;
   const LanguagesOverviewScreen({super.key, required this.onDeleteLanguage});
 
-  State<LanguagesOverviewScreen> createState() =>
-      _LanguagesOverviewScreenState();
+  State<LanguagesOverviewScreen> createState() => _LanguagesOverviewScreenState();
 }
 
 class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
@@ -38,13 +38,9 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
     int learned = WordService.getWordsForLanguage(
       WordService.languages[index],
     ).where((w) => w.learned).length.toInt();
-    int total = WordService.getWordsForLanguage(
-      WordService.languages[index],
-    ).length.toInt();
+    int total = WordService.getWordsForLanguage(WordService.languages[index]).length.toInt();
     double progress = learned / total;
-    final languageController = TextEditingController(
-      text: WordService.languages[index],
-    );
+    final languageController = TextEditingController(text: WordService.languages[index]);
     return Container(
       height: 70,
       margin: const EdgeInsets.all(5),
@@ -71,11 +67,19 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
 
         children: [
           if (!editMode) ...[
-            Text(WordService.languages[index], style: TextStyle(fontSize: 20)),
+            Expanded(
+              child: Text(
+                WordService.languages[index],
+                style: TextStyle(fontSize: 20),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             Text('${learned} / ${total}', style: TextStyle(fontSize: 20)),
           ],
 
           if (editMode) ...[
+            //todo des gscheit machen - schaut nämlich scheiße aus und app kaputt wenn sprachname zu lange
             IntrinsicWidth(
               child: TextField(
                 controller: languageController,
@@ -123,11 +127,7 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
           padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: Column(
             children: <Widget>[
-              for (
-                int index = 0;
-                index < WordService.languages.length;
-                index += 1
-              )
+              for (int index = 0; index < WordService.languages.length; index += 1)
                 Container(child: _buildLanguagetile(index)),
             ],
           ),
