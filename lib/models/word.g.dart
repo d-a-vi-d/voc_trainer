@@ -6,12 +6,6 @@ part of 'word.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-LanguageLabel _$LanguageLabelFromJson(Map<String, dynamic> json) =>
-    LanguageLabel(label: json['label'] as String);
-
-Map<String, dynamic> _$LanguageLabelToJson(LanguageLabel instance) =>
-    <String, dynamic>{'label': instance.label};
-
 Word _$WordFromJson(Map<String, dynamic> json) => Word(
   id: (json['id'] as num?)?.toInt(),
   term: json['term'] as String,
@@ -20,7 +14,7 @@ Word _$WordFromJson(Map<String, dynamic> json) => Word(
   learned: json['learned'] as bool? ?? false,
   languages: json['languages'] == null
       ? null
-      : LanguageLabel.fromJson(json['languages'] as Map<String, dynamic>),
+      : Language.fromJson(json['languages'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{

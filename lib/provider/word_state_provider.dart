@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/models/word.dart';
 import 'package:voc_trainer/models/word_state.dart';
 import 'package:voc_trainer/utils/special_exception.dart';
@@ -14,7 +15,8 @@ class WordStateNotifier extends _$WordStateNotifier {
     // if (user == null) return null;
 
     final languagesRaw = await supabase.from('languages').select('id, label');
-    final languages = languagesRaw.map((l) => l['label'] as String).toList();
+
+    final languages = languagesRaw.map((l) => Language.fromJson(l)).toList();
 
     final wordsRaw = await supabase.from('words').select('*, languages(label)');
     final words = wordsRaw.map((w) => Word.fromJson(w)).toList();
@@ -55,32 +57,102 @@ class WordStateNotifier extends _$WordStateNotifier {
     }
   }
 
+  Future<void> removeWord(Word word) async {
+    final previous = state.requireValue;
+    // 1. State sofort updaten
+    state = AsyncData(
+      WordState(
+        words: previous.words.where((w) => w != word).toList(),
+        languages: previous.languages,
+      ),
+    );
+    if (word.id == null) return;
+    try {
+      // 2. Supabase — gibt echtes Objekt mit DB-id zurück
+      await supabase.from('words').delete().eq('id', word.id!);
+    } catch (e) {
+      state = AsyncData(previous); // Rollback
+      rethrow; // UI fängt den Error
+    }
+  }
+
+  //-------------LANGUAGES-----------------
+
+  Future<void> addLanguage(String language) async {
+    final previous = state.requireValue;
+    // 1. State sofort updaten
+    state = AsyncData(
+      WordState(
+        words: previous.words,
+        languages: [
+          ...previous.languages,
+          Language(label: language),
+        ],
+      ),
+    );
+    try {
+      // 2. Supabase — gibt echtes Objekt mit DB-id zurück
+      final response = await supabase
+          .from('languages')
+          .insert({'label': language, 'user_id': supabase.auth.currentUser!.id})
+          .select('id, label')
+          .single();
+
+      // 3. Ersetze optimistisches Objekt durch echtes
+      final inserted = Language.fromJson(response);
+
+      state = AsyncData(
+        WordState(words: previous.words, languages: [...previous.languages, inserted]),
+      );
+    } catch (e) {
+      state = AsyncData(previous); // Rollback
+      rethrow; // UI fängt den Error
+    }
+  }
+
+  Future<void> removeLanguage(Language language) async {
+    final previous = state.requireValue;
+    // 1. State sofort updaten
+    state = AsyncData(
+      WordState(
+        words: previous.words,
+        languages: previous.languages.where((l) => l.id != language.id).toList(),
+      ),
+    );
+    if (language.id == null) return;
+    try {
+      // 2. Supabase — gibt echtes Objekt mit DB-id zurück
+      await supabase.from('languages').delete().eq('id', language.id!);
+    } catch (e) {
+      state = AsyncData(previous); // Rollback
+      rethrow; // UI fängt den Error
+    }
+  }
+
   Future<void> renameLanguage(int index, String newLanguageName) async {
     //String oldLanguageName = WordService.languages[index];
     final previous = await future;
-    String oldLanguageName = previous.languages[index];
+
     if (newLanguageName.isEmpty) {
       return;
     }
     //checken ob Name existiert
     //if (WordService.languages.contains(newLanguageName)) {
-    if (previous.languages.contains(newLanguageName)) {
+
+    if (previous.languages.any((l) => l.label == newLanguageName)) {
       throw SpecialException(errorMessage: "There is already a language with this name!");
     }
-
-    final updated = [...previous.languages]; // Kopie erstellen
-    updated[index] = newLanguageName; // dann ersetzen
+    final oldLanguage = previous.languages[index];
+    final updated = [...previous.languages];
+    updated[index] = Language(id: oldLanguage.id, label: newLanguageName);
     // 1. State sofort updaten
     state = AsyncData(WordState(words: previous.words, languages: updated));
 
     try {
-      // 2. Supabase — kommt später
+      await supabase.from('languages').update({'label': newLanguageName}).eq('id', oldLanguage.id!);
     } catch (e) {
-      state = AsyncData(previous); // AsyncData ist der "data"-Zustand von AsyncValue
+      state = AsyncData(previous);
       rethrow;
     }
-
-    await saveLanguages();
-    await saveWords();
   }
 }

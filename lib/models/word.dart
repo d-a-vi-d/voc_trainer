@@ -1,12 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:voc_trainer/models/language.dart';
 part 'word.g.dart';
-
-@JsonSerializable()
-class LanguageLabel {
-  final String label;
-  const LanguageLabel({required this.label});
-  factory LanguageLabel.fromJson(Map<String, dynamic> json) => _$LanguageLabelFromJson(json);
-}
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Word {
@@ -15,7 +9,7 @@ class Word {
   String definition;
   final int languageId;
   bool learned;
-  final LanguageLabel? languages;
+  final Language? languages;
   String get language => languages?.label ?? '';
 
   Word({
@@ -34,12 +28,12 @@ class Word {
   //crazy code für wörter löschen
   //dafür muss ich bei der quizlet funktion einfach words.remove machen
 
-  // @override
-  // bool operator ==(Object other) =>
-  //     other is Word &&
-  //     term == other.term &&
-  //     definition == other.definition &&
-  //     language == other.language;
+  @override
+  bool operator ==(Object other) =>
+      other is Word &&
+      term == other.term &&
+      definition == other.definition &&
+      language == other.language;
 
-  // int get hashCode => Object.hash(term, definition, language);
+  int get hashCode => Object.hash(term, definition, language);
 }
