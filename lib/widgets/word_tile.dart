@@ -4,7 +4,7 @@ import '../services/word_service.dart';
 
 class WordTile extends StatefulWidget {
   final Word word;
-  final VoidCallback? onDelete; // <-- callback hinzufügen
+  final VoidCallback? onDelete;
 
   const WordTile({super.key, required this.word, this.onDelete});
 

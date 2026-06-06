@@ -19,12 +19,7 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
         try {
           await WordService.renameLanguage(entry.key, entry.value);
         } catch (error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error.toString()),
-              //duration: Duration(seconds: 3),
-            ),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
         }
       }
       languageNameChanges.clear();

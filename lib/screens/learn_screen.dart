@@ -1,12 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:voc_trainer/services/settings_service.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import '../services/word_service.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 
-enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
+//enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
 
 class LearnScreen extends StatefulWidget {
   final String language;
@@ -21,9 +22,10 @@ class _LearnScreenState extends State<LearnScreen> {
   late List<Word> allWords; // Originalliste für diese Sprache
   late List<Word> shuffledWords; // Gemischte Liste für die Session
   int currentIndex = 0; // Index im shuffledWords
-  bool showHomeLanguage = true;
-  bool showOnlyNotLearned = true;
-  LanguageMode currentLanguageMode = LanguageMode.HomeLanguageFirst;
+  //todo baustelle weil es muss auf das setting zugreifen
+
+  CurrentLanguageMode currentLanguageMode = SettingsService.currentLanguageMode;
+  bool showAlreadyLearned = SettingsService.showAlreadyLearned;
 
   @override
   void initState() {
@@ -34,10 +36,11 @@ class _LearnScreenState extends State<LearnScreen> {
   void _initLearning() {
     allWords = WordService.getWordsForLanguage(
       widget.language,
-    ).where((w) => showOnlyNotLearned ? !w.learned : true).toList();
+    ).where((w) => showAlreadyLearned ? !w.learned : true).toList();
 
     // Shuffle einmal beim Start
     setState(() {
+      _updateShowHomeLanguage();
       shuffledWords = List.from(allWords);
       shuffledWords.shuffle();
       currentIndex = 0;
@@ -77,14 +80,18 @@ class _LearnScreenState extends State<LearnScreen> {
     }
     setState(() {
       currentIndex = (currentIndex + 1) % shuffledWords.length;
-      if (currentLanguageMode == LanguageMode.HomeLanguageFirst) {
-        showHomeLanguage = true;
-      } else if (currentLanguageMode == LanguageMode.ForeignLanguageFirst) {
-        showHomeLanguage = false;
-      } else if (currentLanguageMode == LanguageMode.RandomLanguageFirst) {
-        showHomeLanguage = Random().nextBool();
-      }
+      _updateShowHomeLanguage();
     });
+  }
+
+  void _updateShowHomeLanguage() {
+    if (currentLanguageMode == CurrentLanguageMode.home) {
+      showHomeLanguage = true;
+    } else if (currentLanguageMode == CurrentLanguageMode.foreign) {
+      showHomeLanguage = false;
+    } else {
+      showHomeLanguage = Random().nextBool();
+    }
   }
 
   void _previous() {
@@ -152,22 +159,23 @@ class _LearnScreenState extends State<LearnScreen> {
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    showOnlyNotLearned = false;
+                                    //todo
+                                    showAlreadyLearned = false;
                                     _initLearning();
                                   });
                                 },
-                                selected: !showOnlyNotLearned,
+                                selected: !showAlreadyLearned,
                                 text: "yesss",
                               ),
                               //only show new words button
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    showOnlyNotLearned = true;
+                                    showAlreadyLearned = true;
                                     _initLearning();
                                   });
                                 },
-                                selected: showOnlyNotLearned,
+                                selected: showAlreadyLearned,
                                 text: "nooo",
                               ),
                             ],
@@ -191,33 +199,36 @@ class _LearnScreenState extends State<LearnScreen> {
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.HomeLanguageFirst;
+                                    currentLanguageMode = CurrentLanguageMode.home;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.HomeLanguageFirst,
+                                //todo
+                                selected: currentLanguageMode == CurrentLanguageMode.home,
                                 text: "home",
                               ),
                               //show foreign language first
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.ForeignLanguageFirst;
+                                    currentLanguageMode = CurrentLanguageMode.foreign;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.ForeignLanguageFirst,
+                                //todo
+                                selected: currentLanguageMode == CurrentLanguageMode.foreign,
                                 text: "foreign",
                               ),
                               //random language first
                               MenuButton(
                                 onTap: () {
                                   setState(() {
-                                    currentLanguageMode = LanguageMode.RandomLanguageFirst;
+                                    currentLanguageMode = CurrentLanguageMode.random;
                                     _initLearning(); //Liste neu aufbauen
                                   });
                                 },
-                                selected: currentLanguageMode == LanguageMode.RandomLanguageFirst,
+                                //todo
+                                selected: currentLanguageMode == CurrentLanguageMode.random,
                                 text: "random",
                               ),
                             ],
@@ -263,6 +274,7 @@ class _LearnScreenState extends State<LearnScreen> {
                       ),
                       onPressed: () {
                         setState(() {
+                          //todo
                           showHomeLanguage = !showHomeLanguage;
                         });
                       },

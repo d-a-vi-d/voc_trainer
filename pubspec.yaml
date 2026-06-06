@@ -34,6 +34,7 @@ dependencies:
   shared_preferences: ^2.2.2
   drag_and_drop_lists: ^0.4.0
   linear_progress_bar: "^1.2.0"
+  app_links: ^7.1.1
   riverpod: ^3.2.0
   fuzzywuzzy: ^1.2.0
   # The following adds the Cupertino Icons font to your application.
@@ -43,11 +44,19 @@ dependencies:
   file_picker: ^10.3.10
   path_provider: ^2.1.5
   share_plus: ^12.0.1
+  flutter_riverpod: ^3.3.1
+  riverpod_annotation: ^4.0.2
+  json_annotation: ^4.12.0
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
+  riverpod_generator: ^4.0.3
+  build_runner: ^2.15.0
+  json_serializable: ^6.14.0
+
 
 flutter_launcher_icons:
   android: true
