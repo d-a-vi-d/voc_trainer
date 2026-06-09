@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/languages_overview_screen.dart';
 import 'learn_screen.dart';
-import '../services/word_service.dart';
 import '../models/word.dart';
 import 'package:voc_trainer/screens/settings_screen.dart';
 import 'package:voc_trainer/widgets/word_tile.dart';
@@ -20,12 +21,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final searchController = TextEditingController();
   int selectedLangIndex = 0;
 
-  Future<void> showAddWordDialog(
-    BuildContext context,
-    String currentLanguage, {
-    VoidCallback? onWordAdded,
-  }) async {
-    final FocusNode myFocusNode = FocusNode();
+  Future<void> showAddWordDialog(BuildContext context, Language currentLanguage) async {
+    final myFocusNode = FocusNode();
     bool alreadyEnteredAWord = false;
     final termController = TextEditingController();
     final definitionController = TextEditingController();
@@ -33,7 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Neues Wort für $currentLanguage'),
+        title: Text('Neues Wort für ${currentLanguage.label}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -43,7 +40,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               controller: termController,
               decoration: const InputDecoration(labelText: 'Term'),
             ),
-
             TextField(
               controller: definitionController,
               decoration: const InputDecoration(labelText: 'Definition'),
@@ -57,9 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
                     child: Text(alreadyEnteredAWord ? 'Fertig' : 'Abbrechen'),
                   ),
                   TextButton(
@@ -67,17 +61,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       final term = termController.text.trim();
                       final definition = definitionController.text.trim();
                       if (term.isNotEmpty && definition.isNotEmpty) {
-                        WordService.addWord(
-                          Word(term: term, definition: definition, language_id: currentLanguage),
-                        );
+                        ref
+                            .read(wordStateProvider.notifier)
+                            .addWord(
+                              Word(
+                                term: term,
+                                definition: definition,
+                                languageId: currentLanguage.id!,
+                              ),
+                            );
                         ScaffoldMessenger.of(
                           context,
                         ).showSnackBar(const SnackBar(content: Text('Wort hinzugefügt')));
                         termController.clear();
                         definitionController.clear();
-                        setState(() {
-                          alreadyEnteredAWord = true;
-                        });
+                        setState(() => alreadyEnteredAWord = true);
                         myFocusNode.requestFocus();
                       }
                     },
@@ -90,8 +88,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
-
-    setState(() {});
   }
 
   void _addLanguageDialog() {
@@ -111,8 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () {
               final newLang = addLanguageController.text.trim();
               if (newLang.isNotEmpty) {
-                WordService.addLanguage(newLang);
-                setState(() {});
+                ref.read(wordStateProvider.notifier).addLanguage(newLang);
               }
               Navigator.pop(context);
             },
@@ -123,22 +118,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Future<void> _deleteLanguageDialog(int index) async {
-    final lang = WordService.languages[index];
+  Future<void> _deleteLanguageDialog(Language language) async {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sprache löschen'),
-        content: Text('Möchtest du "$lang" und alle zugehörigen Wörter wirklich löschen?'),
+        content: Text(
+          'Möchtest du "${language.label}" und alle zugehörigen Wörter wirklich löschen?',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
           TextButton(
             onPressed: () async {
-              if (index <= selectedLangIndex) {
-                selectedLangIndex -= 1;
+              await ref.read(wordStateProvider.notifier).removeLanguage(language);
+              final newLength = ref.read(wordStateProvider).requireValue.languages.length;
+              if (selectedLangIndex >= newLength) {
+                setState(
+                  () => selectedLangIndex = (newLength - 1).clamp(0, double.maxFinite.toInt()),
+                );
               }
-              await WordService.removeLanguage(lang);
-              setState(() {});
               Navigator.pop(context);
             },
             child: const Text('Löschen', style: TextStyle(color: Colors.red)),
@@ -148,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLanguagetile(int index) => Container(
+  Widget _buildLanguagetile(int index, List<Language> languages) => Container(
     margin: const EdgeInsets.all(5),
     decoration: BoxDecoration(
       color: index == selectedLangIndex ? Colors.green : Colors.white,
@@ -158,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     alignment: Alignment.center,
     padding: const EdgeInsets.all(10),
     child: Text(
-      WordService.languages[index],
+      languages[index].label,
       style: TextStyle(
         fontSize: 20,
         fontWeight: index == selectedLangIndex ? FontWeight.bold : FontWeight.normal,
@@ -166,40 +164,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ),
   );
 
+  List<Word> _getWordsForSearch(List<Word> allWords, Language currentLanguage, String searchInput) {
+    return allWords.where((w) {
+      if (w.languageId != currentLanguage.id) return false;
+      final input = searchInput.toLowerCase();
+      return w.term.toLowerCase().contains(input) ||
+          w.definition.toLowerCase().contains(input) ||
+          partialRatio(input, w.term.toLowerCase()) > 85 ||
+          partialRatio(input, w.definition.toLowerCase()) > 85;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final asyncState = ref.watch(wordStateProvider);
     return asyncState.when(
-      loading: () => Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
       data: (state) {
-        final currentLanguage = WordService.languages[selectedLangIndex];
-        late List<Word> words;
-        if (searchMode) {
-          final String searchInput = searchController.text;
-          words = WordService.getWordsForSearch(currentLanguage, searchInput);
-        } else {
-          words = WordService.getWordsForLanguage(currentLanguage);
+        if (state.languages.isEmpty) {
+          return Scaffold(
+            body: const Center(child: Text('Keine Sprachen vorhanden')),
+            floatingActionButton: FloatingActionButton(
+              onPressed: _addLanguageDialog,
+              child: const Icon(Icons.add),
+            ),
+          );
         }
+        if (selectedLangIndex >= state.languages.length) {
+          selectedLangIndex = state.languages.length - 1;
+        }
+        final currentLanguage = state.languages[selectedLangIndex];
+        final words = searchMode
+            ? _getWordsForSearch(state.words, currentLanguage, searchController.text)
+            : state.words.where((w) => w.languageId == currentLanguage.id).toList();
+
         return Scaffold(
           appBar: AppBar(
-            actionsPadding: EdgeInsets.only(right: 8),
+            actionsPadding: const EdgeInsets.only(right: 8),
             title: Row(
               children: [
-                Expanded(child: Text(currentLanguage, overflow: TextOverflow.ellipsis)),
+                Expanded(child: Text(currentLanguage.label, overflow: TextOverflow.ellipsis)),
                 if (searchMode) ...[
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   Expanded(
-                    child: SizedBox(
-                      width: 70,
-                      child: TextField(
-                        autofocus: true,
-                        controller: searchController,
-                        decoration: const InputDecoration(labelText: 'Suche', isDense: true),
-                        onChanged: (_) {
-                          setState(() {});
-                        },
-                      ),
+                    child: TextField(
+                      autofocus: true,
+                      controller: searchController,
+                      decoration: const InputDecoration(labelText: 'Suche', isDense: true),
+                      onChanged: (_) => setState(() {}),
                     ),
                   ),
                 ],
@@ -209,12 +222,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               IconButton(
                 icon: Icon(searchMode ? Icons.close : Icons.search_rounded),
                 onPressed: () {
-                  if (searchMode) {
-                    searchController.clear();
-                  }
-                  setState(() {
-                    searchMode = !searchMode;
-                  });
+                  if (searchMode) searchController.clear();
+                  setState(() => searchMode = !searchMode);
                 },
               ),
               if (!searchMode) ...[
@@ -233,9 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                      ).then((_) {
-                        setState(() {});
-                      });
+                      ).then((_) => setState(() {}));
                     }
                   },
                   itemBuilder: (context) => const [
@@ -243,15 +250,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     PopupMenuItem(value: "settings", child: Text("Settings")),
                   ],
                 ),
-
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage)),
-                    );
-                  },
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage.label)),
+                  ),
                   child: const Text('Lernen'),
                 ),
               ],
@@ -267,149 +271,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (context, index) {
                     final word = words[index];
                     return WordTile(
-                      key: ValueKey('${word.language_id}_${word.term}'),
+                      key: ValueKey('${word.languageId}_${word.term}'),
                       word: word,
-                      onDelete: () {
-                        setState(() {});
-                      },
+                      onDelete: () => setState(() {}),
                     );
-                    /*
-                
-                final isEditing = editMode[word] ?? false;
-                final termController = TextEditingController(text: word.term);
-                final definitionController = TextEditingController(text: word.definition);
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: isEditing
-                              ? Column(
-                                  children: [
-                                    TextField(
-                                      controller: termController,
-                                      decoration: const InputDecoration(hintText: 'Word'),
-                                      onSubmitted: (_) {
-                                        word.term = termController.text;
-                                      },
-                                    ),
-                                    TextField(
-                                      controller: definitionController,
-                                      decoration: const InputDecoration(hintText: 'Definition'),
-                                      onSubmitted: (_) {
-                                        word.definition = definitionController.text;
-                                      },
-                                    ),
-                                  ],
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(word.term, style: const TextStyle(fontSize: 16)),
-                                    Text(word.definition, style: const TextStyle(fontSize: 14)),
-                                  ],
-                                ),
-                        ),
-                        Column(
-                          children: [
-                            IconButton(
-                              icon: isEditing
-                                  ? const Icon(Icons.delete, color: Colors.red)
-                                  : Icon(
-                                      word.learned
-                                          ? Icons.check_circle
-                                          : Icons.radio_button_unchecked,
-                                      color: word.learned ? Colors.green : Colors.grey,
-                                    ),
-                              onPressed: () {
-                                setState(() {
-                                  if (isEditing) {
-                                    WordService.removeWord(word);
-                                  } else {
-                                    word.learned = !word.learned;
-                                    WordService.saveWords();
-                                  }
-                                });
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                isEditing ? Icons.check : Icons.edit,
-                                color: isEditing ? Colors.green : Colors.grey,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  if (isEditing) {
-                                    // Eingaben übernehmen
-                                    word.term = termController.text;
-                                    word.definition = definitionController.text;
-                                    // Edit-Modus beenden
-                                    editMode[word] = false;
-
-                                    // JETZT speichern
-                                    WordService.update();
-                                  } else {
-                                    // Edit-Modus aktivieren
-                                    editMode[word] = true;
-                                  }
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );*/
                   },
                 ),
               ),
             ],
           ),
-          bottomNavigationBar: Container(
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
             child: SizedBox(
               height: 90,
               child: ReorderableListView(
-                proxyDecorator: (Widget child, int index, Animation<double> animation) =>
-                    _buildLanguagetile(index),
+                proxyDecorator: (child, index, _) => _buildLanguagetile(index, state.languages),
                 scrollDirection: Axis.horizontal,
-                onReorder: (int index, int newIndex) {
-                  if (newIndex >= WordService.languages.length) {
-                    newIndex = WordService.languages.length;
-                  }
-
+                onReorder: (oldIndex, newIndex) {
+                  // Reorder nur lokal — Supabase hat noch keine order-Spalte
                   setState(() {
-                    if (index < newIndex) newIndex -= 1;
-                    final previouslySelected = WordService.languages[selectedLangIndex];
-                    final String item = WordService.languages.removeAt(index);
-                    WordService.languages.insert(newIndex, item);
-
-                    selectedLangIndex = WordService.languages.indexOf(previouslySelected);
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final previouslySelected = state.languages[selectedLangIndex];
+                    final langs = [...state.languages];
+                    final item = langs.removeAt(oldIndex);
+                    langs.insert(newIndex, item);
+                    selectedLangIndex = langs.indexOf(previouslySelected);
                     if (selectedLangIndex == -1) selectedLangIndex = 0;
-
-                    WordService.saveLanguages();
+                    // TODO: reorderLanguage im Provider + order-Spalte in Supabase
                   });
                 },
-                children: <Widget>[
-                  for (int index = 0; index < WordService.languages.length; index += 1)
+                children: [
+                  for (int i = 0; i < state.languages.length; i++)
                     GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedLangIndex = index;
-                        });
-                      },
-                      key: Key('$index'),
-                      child: _buildLanguagetile(index),
+                      key: Key('lang_$i'),
+                      onTap: () => setState(() => selectedLangIndex = i),
+                      child: _buildLanguagetile(i, state.languages),
                     ),
                   GestureDetector(
-                    onTap: () {
-                      _addLanguageDialog();
-                      setState(() {});
-                    },
-                    key: Key('add/ delete Button'),
+                    key: const Key('add_button'),
+                    onTap: _addLanguageDialog,
                     child: Container(
                       margin: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
@@ -419,7 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       alignment: Alignment.center,
                       padding: const EdgeInsets.all(10),
-                      child: Icon(Icons.add),
+                      child: const Icon(Icons.add),
                     ),
                   ),
                 ],
@@ -427,15 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              showAddWordDialog(
-                context,
-                currentLanguage,
-                onWordAdded: () {
-                  setState(() {});
-                },
-              );
-            },
+            onPressed: () => showAddWordDialog(context, currentLanguage),
             child: const Icon(Icons.add),
           ),
         );

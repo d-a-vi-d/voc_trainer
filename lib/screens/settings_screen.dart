@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/login_screen.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../services/backup_service.dart';
 
-enum LanguageMode {
-  HomeLanguageFirst,
-  ForeignLanguageFirst,
-  RandomLanguageFirst,
-}
+enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
 
 final supabase = Supabase.instance.client;
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool showOnlyNotLearned = true;
   LanguageMode currentLanguageMode = LanguageMode.HomeLanguageFirst;
 
@@ -103,8 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       currentLanguageMode = LanguageMode.HomeLanguageFirst;
                     });
                   },
-                  selected:
-                      currentLanguageMode == LanguageMode.HomeLanguageFirst,
+                  selected: currentLanguageMode == LanguageMode.HomeLanguageFirst,
                   text: "home",
                 ),
                 //show foreign language first
@@ -114,8 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       currentLanguageMode = LanguageMode.ForeignLanguageFirst;
                     });
                   },
-                  selected:
-                      currentLanguageMode == LanguageMode.ForeignLanguageFirst,
+                  selected: currentLanguageMode == LanguageMode.ForeignLanguageFirst,
                   text: "foreign",
                 ),
                 //random language first
@@ -125,8 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       currentLanguageMode = LanguageMode.RandomLanguageFirst;
                     });
                   },
-                  selected:
-                      currentLanguageMode == LanguageMode.RandomLanguageFirst,
+                  selected: currentLanguageMode == LanguageMode.RandomLanguageFirst,
                   text: "random",
                 ),
               ],
@@ -149,18 +144,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 MenuButton(
                   onTap: () async {
                     try {
-                      await BackupService.exportBackup();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Backup erfolgreich erstellt!"),
-                        ),
-                      );
+                      await BackupService.exportBackup(ref.read(wordStateProvider).requireValue);
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text("Backup erfolgreich erstellt!")));
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Fehler beim Backup erstellen: $e"),
-                        ),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("Fehler beim Backup erstellen: $e")));
                     }
                   },
                   selected: false,
@@ -171,16 +162,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 MenuButton(
                   onTap: () async {
                     try {
-                      await BackupService.importBackup();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Backup erfolgreich geladen!"),
-                        ),
-                      );
+                      await BackupService.importBackup(ref);
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text("Backup erfolgreich geladen!")));
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Fehler beim Backup laden: $e")),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text("Fehler beim Backup laden: $e")));
                     }
                   },
                   selected: false,

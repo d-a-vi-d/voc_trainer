@@ -1,28 +1,24 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/services/settings_service.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
-import '../services/word_service.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
 
-//enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
-
-class LearnScreen extends StatefulWidget {
+class LearnScreen extends ConsumerStatefulWidget {
   final String language;
-
   const LearnScreen({super.key, required this.language});
 
   @override
-  State<LearnScreen> createState() => _LearnScreenState();
+  ConsumerState<LearnScreen> createState() => _LearnScreenState();
 }
 
-class _LearnScreenState extends State<LearnScreen> {
-  late List<Word> allWords; // Originalliste für diese Sprache
-  late List<Word> shuffledWords; // Gemischte Liste für die Session
-  int currentIndex = 0; // Index im shuffledWords
-  //todo baustelle weil es muss auf das setting zugreifen
+class _LearnScreenState extends ConsumerState<LearnScreen> {
+  late List<Word> shuffledWords;
+  int currentIndex = 0;
+  bool showHomeLanguage = true;
 
   CurrentLanguageMode currentLanguageMode = SettingsService.currentLanguageMode;
   bool showAlreadyLearned = SettingsService.showAlreadyLearned;
@@ -34,17 +30,29 @@ class _LearnScreenState extends State<LearnScreen> {
   }
 
   void _initLearning() {
-    allWords = WordService.getWordsForLanguage(
-      widget.language,
-    ).where((w) => showAlreadyLearned ? !w.learned : true).toList();
+    final words = ref
+        .read(wordStateProvider)
+        .requireValue
+        .words
+        .where((w) => w.language == widget.language)
+        .where((w) => showAlreadyLearned ? !w.learned : true)
+        .toList();
 
-    // Shuffle einmal beim Start
     setState(() {
       _updateShowHomeLanguage();
-      shuffledWords = List.from(allWords);
-      shuffledWords.shuffle();
+      shuffledWords = List.from(words)..shuffle();
       currentIndex = 0;
     });
+  }
+
+  void _updateShowHomeLanguage() {
+    if (currentLanguageMode == CurrentLanguageMode.home) {
+      showHomeLanguage = true;
+    } else if (currentLanguageMode == CurrentLanguageMode.foreign) {
+      showHomeLanguage = false;
+    } else {
+      showHomeLanguage = Random().nextBool();
+    }
   }
 
   void _next() {
@@ -53,7 +61,7 @@ class _LearnScreenState extends State<LearnScreen> {
       showDialog(
         barrierDismissible: false,
         context: context,
-        builder: (BuildContext context) => AlertDialog(
+        builder: (context) => AlertDialog(
           actionsAlignment: MainAxisAlignment.spaceBetween,
           title: const Text('Ende der Liste'),
           content: const Text(
@@ -84,32 +92,28 @@ class _LearnScreenState extends State<LearnScreen> {
     });
   }
 
-  void _updateShowHomeLanguage() {
-    if (currentLanguageMode == CurrentLanguageMode.home) {
-      showHomeLanguage = true;
-    } else if (currentLanguageMode == CurrentLanguageMode.foreign) {
-      showHomeLanguage = false;
-    } else {
-      showHomeLanguage = Random().nextBool();
-    }
-  }
-
   void _previous() {
-    if (shuffledWords.isEmpty) return;
-    if (currentIndex == 0) return;
-    setState(() {
-      currentIndex = (currentIndex - 1) % shuffledWords.length;
-    });
+    if (shuffledWords.isEmpty || currentIndex == 0) return;
+    setState(() => currentIndex = (currentIndex - 1) % shuffledWords.length);
   }
 
   void _toggleLearned() {
+    final word = shuffledWords[currentIndex];
+    ref.read(wordStateProvider.notifier).toggleLearned(word);
+    // lokal updaten damit der Button sofort reagiert
     setState(() {
-      final word = shuffledWords[currentIndex];
-      word.learned = !word.learned;
-      WordService.update();
+      shuffledWords[currentIndex] = Word(
+        id: word.id,
+        term: word.term,
+        definition: word.definition,
+        languageId: word.languageId,
+        learned: !word.learned,
+        languages: word.languages,
+      );
     });
   }
 
+  // build() bleibt gleich, nur WordService.update() ist weg
   @override
   Widget build(BuildContext context) {
     Word? currentWord = null;

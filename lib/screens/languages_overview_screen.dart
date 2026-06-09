@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:voc_trainer/services/word_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/models/language.dart';
+import 'package:voc_trainer/provider/word_state_provider.dart';
 
-class LanguagesOverviewScreen extends StatefulWidget {
-  final Future<void> Function(int index) onDeleteLanguage;
+class LanguagesOverviewScreen extends ConsumerStatefulWidget {
+  final Future<void> Function(Language language) onDeleteLanguage;
   const LanguagesOverviewScreen({super.key, required this.onDeleteLanguage});
 
-  State<LanguagesOverviewScreen> createState() => _LanguagesOverviewScreenState();
+  @override
+  ConsumerState<LanguagesOverviewScreen> createState() => _LanguagesOverviewScreenState();
 }
 
-class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
+class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScreen> {
   bool editMode = false;
   final Map<int, String> languageNameChanges = {};
 
@@ -17,37 +19,34 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
     if (editMode) {
       for (final entry in languageNameChanges.entries) {
         try {
-          await WordService.renameLanguage(entry.key, entry.value);
+          await ref.read(wordStateProvider.notifier).renameLanguage(entry.key, entry.value);
         } catch (error) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
         }
       }
       languageNameChanges.clear();
     }
-    setState(() {
-      editMode = !editMode;
-    });
+    setState(() => editMode = !editMode);
   }
 
-  Widget _buildLanguagetile(int index) {
-    int learned = WordService.getWordsForLanguage(
-      WordService.languages[index],
-    ).where((w) => w.learned).length.toInt();
-    int total = WordService.getWordsForLanguage(WordService.languages[index]).length.toInt();
-    double progress = learned / total;
-    final languageController = TextEditingController(text: WordService.languages[index]);
+  Widget _buildLanguagetile(int index, List<Language> languages, List words) {
+    final language = languages[index];
+    final wordsForLang = words.where((w) => w.languageId == language.id).toList();
+    final learned = wordsForLang.where((w) => w.learned).length;
+    final total = wordsForLang.length;
+    final progress = total == 0 ? 0.0 : learned / total;
+    final languageController = TextEditingController(text: language.label);
+
     return Container(
       height: 70,
       margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.green, Colors.white],
-          stops: total == 0
-              ? [0, 0]
-              : progress == 0
-              ? [0, 0]
+          stops: total == 0 || progress == 0
+              ? [0.0, 0.0]
               : progress == 1
-              ? [1, 1]
+              ? [1.0, 1.0]
               : [progress - 0.01, progress + 0.01],
         ),
         borderRadius: BorderRadius.circular(15),
@@ -55,46 +54,36 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
       ),
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.all(10),
-
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-
         children: [
           if (!editMode) ...[
             Expanded(
               child: Text(
-                WordService.languages[index],
-                style: TextStyle(fontSize: 20),
+                language.label,
+                style: const TextStyle(fontSize: 20),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Text('${learned} / ${total}', style: TextStyle(fontSize: 20)),
+            Text('$learned / $total', style: const TextStyle(fontSize: 20)),
           ],
-
           if (editMode) ...[
-            //todo des gscheit machen - schaut nämlich scheiße aus und app kaputt wenn sprachname zu lange
             IntrinsicWidth(
               child: TextField(
                 controller: languageController,
-
                 decoration: const InputDecoration(hintText: 'Language'),
-                onChanged: (_) {
-                  final String newLanguageName = languageController.text;
-                  languageNameChanges[index] = newLanguageName;
-                },
-                style: TextStyle(fontSize: 20),
+                style: const TextStyle(fontSize: 20),
+                onChanged: (val) => languageNameChanges[index] = val,
               ),
             ),
             IconButton(
               onPressed: () async {
-                await widget.onDeleteLanguage(index);
-                setState(() {
-                  editMode = false;
-                });
+                await widget.onDeleteLanguage(language);
+                setState(() => editMode = false);
               },
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               iconSize: 30,
             ),
           ],
@@ -105,26 +94,28 @@ class _LanguagesOverviewScreenState extends State<LanguagesOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actionsPadding: EdgeInsets.only(right: 8),
-        title: Text("Your Languages"),
-        actions: [
-          IconButton(
-            onPressed: _toggleEditMode,
-            icon: editMode ? Icon(Icons.check) : Icon(Icons.edit),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-          child: Column(
-            children: <Widget>[
-              for (int index = 0; index < WordService.languages.length; index += 1)
-                Container(child: _buildLanguagetile(index)),
-            ],
+    final asyncState = ref.watch(wordStateProvider);
+    return asyncState.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+      data: (state) => Scaffold(
+        appBar: AppBar(
+          actionsPadding: const EdgeInsets.only(right: 8),
+          title: const Text("Your Languages"),
+          actions: [
+            IconButton(onPressed: _toggleEditMode, icon: Icon(editMode ? Icons.check : Icons.edit)),
+          ],
+        ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: Column(
+              children: [
+                for (int i = 0; i < state.languages.length; i++)
+                  _buildLanguagetile(i, state.languages, state.words),
+              ],
+            ),
           ),
         ),
       ),

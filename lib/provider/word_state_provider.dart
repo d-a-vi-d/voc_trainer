@@ -155,4 +155,29 @@ class WordStateNotifier extends _$WordStateNotifier {
       rethrow;
     }
   }
+
+  Future<void> toggleLearned(Word word) async {
+    final previous = state.requireValue;
+    final updated = previous.words
+        .map(
+          (w) => w == word
+              ? Word(
+                  id: w.id,
+                  term: w.term,
+                  definition: w.definition,
+                  languageId: w.languageId,
+                  learned: !w.learned,
+                  languages: w.languages,
+                )
+              : w,
+        )
+        .toList();
+    state = AsyncData(WordState(words: updated, languages: previous.languages));
+    try {
+      await supabase.from('words').update({'learned': !word.learned}).eq('id', word.id!);
+    } catch (e) {
+      state = AsyncData(previous);
+      rethrow;
+    }
+  }
 }

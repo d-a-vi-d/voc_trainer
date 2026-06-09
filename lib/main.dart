@@ -1,10 +1,10 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/widgets/app_shell.dart';
-import 'screens/home_screen.dart';
-import 'screens/login_screen.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'services/word_service.dart';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final supabase = Supabase.instance.client;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Vokabeltrainer',
