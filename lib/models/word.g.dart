@@ -18,10 +18,8 @@ Word _$WordFromJson(Map<String, dynamic> json) => Word(
 );
 
 Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{
-  'id': instance.id,
   'term': instance.term,
   'definition': instance.definition,
   'language_id': instance.languageId,
   'learned': instance.learned,
-  'languages': instance.languages,
 };

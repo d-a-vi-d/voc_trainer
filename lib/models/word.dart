@@ -4,11 +4,13 @@ part 'word.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Word {
+  @JsonKey(includeToJson: false)
   final int? id;
   String term;
   String definition;
   final int languageId;
   bool learned;
+  @JsonKey(includeToJson: false)
   final Language? languages;
   String get language => languages?.label ?? '';
 

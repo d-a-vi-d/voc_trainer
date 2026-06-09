@@ -10,12 +10,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final supabase = Supabase.instance.client;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  //await WordService.load();
   await dotenv.load();
   final supabaseUrl = dotenv.get('SUPABASE_URL');
   final anonKey = dotenv.get('SUPABASE_ANON_KEY');
-  await Supabase.initialize(url: supabaseUrl, anonKey: anonKey);
-  //TODO wofür würde ich applinks brauchen?
+  await Supabase.initialize(url: supabaseUrl, publishableKey: anonKey);
+
   final appLinks = AppLinks();
 
   final initialUri = await appLinks.getInitialLink();
@@ -42,10 +41,8 @@ class MyApp extends StatelessWidget {
 
 
 //! Funktionalität
-// riverpod implementieren
-  // onAuthStateChange managen statt navigator.pushReplacement
 // Settings wo speichern
-// mit supabase verknüpfen
+// "backup erfolgreich erstellt"
 
 //! Features
 // drittes Feld für Aussprache

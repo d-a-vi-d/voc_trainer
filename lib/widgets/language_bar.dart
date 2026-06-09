@@ -49,8 +49,8 @@ class LanguageBar extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: DragTarget<int>(
-                onWillAccept: (dragIndex) => true,
-                onAccept: (dragIndex) => onDrop(-1),
+                onWillAcceptWithDetails: (dragIndex) => true,
+                onAcceptWithDetails: (dragIndex) => onDrop(-1),
                 builder: (context, candidateData, rejectedData) {
                   return Container(
                     width: 70,
@@ -58,8 +58,7 @@ class LanguageBar extends StatelessWidget {
                       color: isTrash ? Colors.red : mainGreen,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(isTrash ? Icons.delete : Icons.add,
-                        color: Colors.white),
+                    child: Icon(isTrash ? Icons.delete : Icons.add, color: Colors.white),
                   );
                 },
               ),
@@ -68,7 +67,7 @@ class LanguageBar extends StatelessWidget {
 
           final lang = langList[i];
           final isSelected = selectedLangIndex == i;
-          final isDragging = draggingIndex == i;
+          //final isDragging = draggingIndex == i;
           final isPreview = dropPreviewIndex == i && isDraggingMode;
 
           return Padding(
@@ -81,10 +80,12 @@ class LanguageBar extends StatelessWidget {
                 final box = context.findRenderObject() as RenderBox;
                 final localPos = box.globalToLocal(details.globalPosition);
                 int? targetIndex;
-                if (localPos.dx < 40) targetIndex = 0;
+                if (localPos.dx < 40)
+                  targetIndex = 0;
                 else if (localPos.dx > box.size.width - 40)
                   targetIndex = langList.length - 1;
-                else targetIndex = i; // einfache Logik
+                else
+                  targetIndex = i; // einfache Logik
                 onDragUpdate(targetIndex);
               },
               onDraggableCanceled: (_, __) => onDragEnd(),
@@ -94,42 +95,34 @@ class LanguageBar extends StatelessWidget {
                   width: 70,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                      color: accentGreen,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(2, 2))
-                      ]),
+                    color: accentGreen,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(2, 2)),
+                    ],
+                  ),
                   child: Center(child: Text(lang)),
                 ),
               ),
               child: GestureDetector(
                 onTap: () => onSelect(i),
 
-                
                 child: Container(
                   width: 70,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isSelected ? mainGreen : Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
-                    border: isPreview
-                        ? Border.all(color: Colors.blue, width: 3)
-                        : null,
+                    border: isPreview ? Border.all(color: Colors.blue, width: 3) : null,
                   ),
                   child: Center(
                     child: Text(
                       lang,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black),
+                      style: TextStyle(color: isSelected ? Colors.white : Colors.black),
                     ),
                   ),
                 ),
-
-                
               ),
             ),
           );

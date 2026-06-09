@@ -33,7 +33,7 @@ final class WordStateNotifierProvider
   WordStateNotifier create() => WordStateNotifier();
 }
 
-String _$wordStateNotifierHash() => r'936004ad77a6a3cc826b185e9972a11544471019';
+String _$wordStateNotifierHash() => r'46aaa654d74a93f206bd984712521889c8eb1c1a';
 
 abstract class _$WordStateNotifier extends $AsyncNotifier<WordState> {
   FutureOr<WordState> build();

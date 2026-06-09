@@ -32,7 +32,7 @@ class BackupService {
     await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
   }
 
-  static Future<void> importBackup(WidgetRef ref) async {
+  static Future<void> importBackup(Ref ref) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],

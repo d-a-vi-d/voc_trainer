@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/word.dart';
-import '../services/word_service.dart';
+import '../provider/word_state_provider.dart';
+import '../utils/error_snackbar.dart';
 
-class WordTile extends StatefulWidget {
+class WordTile extends ConsumerStatefulWidget {
   final Word word;
   final VoidCallback? onDelete;
 
   const WordTile({super.key, required this.word, this.onDelete});
 
   @override
-  State<WordTile> createState() => _WordTileState();
+  ConsumerState<WordTile> createState() => _WordTileState();
 }
 
-class _WordTileState extends State<WordTile> {
+class _WordTileState extends ConsumerState<WordTile> {
   late TextEditingController termController;
   late TextEditingController definitionController;
-
   bool isEditing = false;
 
   @override
@@ -32,25 +33,36 @@ class _WordTileState extends State<WordTile> {
     super.dispose();
   }
 
-  void _toggleLearned() {
-    setState(() {
-      widget.word.learned = !widget.word.learned;
-      WordService.saveWords();
-    });
+  Future<void> _toggleLearned() async {
+    try {
+      await ref.read(wordStateProvider.notifier).toggleLearned(widget.word);
+    } catch (e) {
+      if (context.mounted) context.showError(e);
+    }
   }
 
-  void _deleteWord() async {
-    await WordService.removeWord(widget.word);
-    if (widget.onDelete != null) widget.onDelete!(); // <-- HomeScreen benachrichtigen
+  Future<void> _deleteWord() async {
+    try {
+      await ref.read(wordStateProvider.notifier).removeWord(widget.word);
+      widget.onDelete?.call();
+    } catch (e) {
+      if (context.mounted) context.showError(e);
+    }
   }
 
-  void _saveEdit() {
-    setState(() {
-      widget.word.term = termController.text.trim();
-      widget.word.definition = definitionController.text.trim();
-      isEditing = false;
-      WordService.update();
-    });
+  Future<void> _saveEdit() async {
+    try {
+      await ref
+          .read(wordStateProvider.notifier)
+          .updateWord(
+            widget.word,
+            term: termController.text.trim(),
+            definition: definitionController.text.trim(),
+          );
+      setState(() => isEditing = false);
+    } catch (e) {
+      if (context.mounted) context.showError(e);
+    }
   }
 
   @override
@@ -92,28 +104,14 @@ class _WordTileState extends State<WordTile> {
                           widget.word.learned ? Icons.check_circle : Icons.radio_button_unchecked,
                           color: widget.word.learned ? Colors.green : Colors.grey,
                         ),
-                  onPressed: () {
-                    if (isEditing) {
-                      _deleteWord();
-                    } else {
-                      _toggleLearned();
-                    }
-                  },
+                  onPressed: isEditing ? _deleteWord : _toggleLearned,
                 ),
                 IconButton(
                   icon: Icon(
                     isEditing ? Icons.check : Icons.edit,
                     color: isEditing ? Colors.green : Colors.grey,
                   ),
-                  onPressed: () {
-                    if (isEditing) {
-                      _saveEdit();
-                    } else {
-                      setState(() {
-                        isEditing = true;
-                      });
-                    }
-                  },
+                  onPressed: isEditing ? _saveEdit : () => setState(() => isEditing = true),
                 ),
               ],
             ),

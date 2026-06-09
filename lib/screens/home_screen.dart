@@ -287,17 +287,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: ReorderableListView(
                 proxyDecorator: (child, index, _) => _buildLanguagetile(index, state.languages),
                 scrollDirection: Axis.horizontal,
-                onReorder: (oldIndex, newIndex) {
-                  // Reorder nur lokal — Supabase hat noch keine order-Spalte
+                onReorderItem: (oldIndex, newIndex) {
                   setState(() {
-                    if (newIndex > oldIndex) newIndex -= 1;
                     final previouslySelected = state.languages[selectedLangIndex];
                     final langs = [...state.languages];
                     final item = langs.removeAt(oldIndex);
                     langs.insert(newIndex, item);
                     selectedLangIndex = langs.indexOf(previouslySelected);
                     if (selectedLangIndex == -1) selectedLangIndex = 0;
-                    // TODO: reorderLanguage im Provider + order-Spalte in Supabase
                   });
                 },
                 children: [

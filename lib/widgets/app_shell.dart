@@ -3,11 +3,13 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:voc_trainer/helps/help_login.dart' hide LoginScreen, supabase;
+import 'package:voc_trainer/provider/auth_provider.dart';
+import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/home_screen.dart';
-import 'package:voc_trainer/screens/login_screen.dart';
 import 'dart:async';
 
-import '../main.dart';
+import 'package:voc_trainer/screens/login_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -45,47 +47,47 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    //!final userAsync = ref.watch(authProvider);
+    final userAsync = ref.watch(authProvider);
+    final wordStateAsync = ref.watch(wordStateProvider);
 
-    //!if (userAsync == null) return const LoginScreen();
+    if (userAsync.isLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (userAsync.value?.session == null) return const LoginScreen();
 
-    // if (familyAsync.hasError || profileAsync.hasError) {
-    //   return Scaffold(
-    //     body: Center(
-    //       child: Column(
-    //         mainAxisSize: MainAxisSize.min,
-    //         children: [
-    //           const Text('Fehler beim Laden'),
-    //           ElevatedButton(
-    //             onPressed: () {
-    //               ref.invalidate(familyProvider);
-    //               ref.invalidate(profileProvider);
-    //             },
-    //             child: const Text('Erneut versuchen'),
-    //           ),
-    //           const SizedBox(height: 10),
-    //           ElevatedButton(
-    //             onPressed: () async {
-    //               try {
-    //                 await supabase.auth.signOut();
-    //               } catch (_) {
-    //                 await supabase.auth.signOut(scope: SignOutScope.local);
-    //               }
-    //             },
-    //             child: const Text('Ausloggen'),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   );
-    // }
+    if (wordStateAsync.hasError) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Fehler beim Laden'),
+              ElevatedButton(
+                onPressed: () {
+                  ref.invalidate(wordStateProvider);
+                },
+                child: const Text('Erneut versuchen'),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await supabase.auth.signOut();
+                  } catch (_) {
+                    await supabase.auth.signOut(scope: SignOutScope.local);
+                  }
+                },
+                child: const Text('Ausloggen'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-    // // Warten bis BEIDE geladen sind
-    // if (!familyAsync.hasValue || !profileAsync.hasValue) {
-    //   return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    // }
-
-    //TODO alle provider preloaden
+    // Warten bis BEIDE geladen sind
+    if (!wordStateAsync.hasValue) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return const HomeScreen();
   }
@@ -96,16 +98,3 @@ class _AppShellState extends ConsumerState<AppShell> {
     super.dispose();
   }
 }
-
-//TODO das iwie einbauen
-// StreamBuilder<AuthState>(
-//         stream: supabase.auth.onAuthStateChange,
-//         builder: (context, snapshot) {
-//           final session = supabase.auth.currentSession;
-//           if (session != null) {
-//             return const HomeScreen();
-//           } else {
-//             return const LoginScreen();
-//           }
-//         },
-//       ),
