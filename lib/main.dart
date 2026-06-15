@@ -8,6 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
@@ -41,7 +42,11 @@ class MyApp extends StatelessWidget {
 
 
 //! Funktionalität
-// Settings wo speichern
+// signupscreen und loginscreen überarbeiten glaub ist unclean
+// validierung
+// supabase.auth in den provider
+// app shell sollte managen wo man ist
+
 // "backup erfolgreich erstellt"
 
 //! Features
@@ -50,6 +55,4 @@ class MyApp extends StatelessWidget {
 // immer Lernbündel
 // mehrere Sprachen gleichzeitig
 // Auto Modus mit Audio
-
-
-// ✔️renaming a language - checking the check in the appbar - new language name not saved
+// offline/ online sync

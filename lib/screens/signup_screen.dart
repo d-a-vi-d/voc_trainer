@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:voc_trainer/main.dart';
 import 'package:voc_trainer/screens/login_screen.dart';
-
-final supabase = Supabase.instance.client;
-bool isLoggedIn = false;
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -36,10 +34,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 TextField(
                   controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: "email",
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: "email", border: OutlineInputBorder()),
                 ),
                 SizedBox(height: 20),
                 TextField(
@@ -54,11 +49,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           hiddenPassword = !hiddenPassword;
                         });
                       },
-                      icon: Icon(
-                        hiddenPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
+                      icon: Icon(hiddenPassword ? Icons.visibility_off : Icons.visibility),
                     ),
                   ),
                 ),
@@ -67,10 +58,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   width: double.maxFinite,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       backgroundColor: Colors.blueAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadiusGeometry.circular(10),
@@ -85,19 +73,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         );
                         if (authResponse.user != null) {
                           sm.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Signed Up: ${authResponse.user!.email!}",
-                              ),
-                            ),
+                            SnackBar(content: Text("Signed Up: ${authResponse.user!.email!}")),
                           ); //success
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => LoginScreen()),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
                         } else {
-                          sm.showSnackBar(
-                            SnackBar(content: Text("An unknown Error occured")),
-                          );
+                          sm.showSnackBar(SnackBar(content: Text("An unknown Error occured")));
                         }
                       } on AuthException catch (e) {
                         sm.showSnackBar(SnackBar(content: Text(e.message)));
@@ -120,10 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      "Already have an account?",
-                      style: TextStyle(fontSize: 14),
-                    ),
+                    Text("Already have an account?", style: TextStyle(fontSize: 14)),
                     SizedBox(width: 5),
                     GestureDetector(
                       child: Text(

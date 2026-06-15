@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
-import 'package:voc_trainer/screens/login_screen.dart';
+import 'package:voc_trainer/utils/auth_screen.dart';
+import 'package:voc_trainer/utils/error_snackbar.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../services/backup_service.dart';
-
-enum LanguageMode { HomeLanguageFirst, ForeignLanguageFirst, RandomLanguageFirst }
-
-final supabase = Supabase.instance.client;
+import 'package:voc_trainer/main.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -18,11 +16,19 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool showOnlyNotLearned = true;
-  LanguageMode currentLanguageMode = LanguageMode.HomeLanguageFirst;
-
   @override
   Widget build(BuildContext context) {
+    final settingsAsync = ref.watch(settingsProvider);
+
+    if (settingsAsync.isLoading || !settingsAsync.hasValue)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    if (settingsAsync.hasError)
+      return const Scaffold(body: Center(child: Text("Fehler beim Laden der Einstellungen")));
+
+    final showAlreadyLearned = settingsAsync.requireValue.showAlreadyLearned;
+    final languageMode = settingsAsync.requireValue.languageMode;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
@@ -32,7 +38,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onPressed: () async {
               await supabase.auth.signOut();
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => LoginScreen()),
+                MaterialPageRoute(builder: (_) => AuthScreen()),
                 (route) => false,
               );
             },
@@ -60,21 +66,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 //show all words button
                 MenuButton(
                   onTap: () {
-                    setState(() {
-                      showOnlyNotLearned = false;
-                    });
+                    // setState(() {
+                    //   showOnlyNotLearned = false;
+                    // });
+                    ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
                   },
-                  selected: !showOnlyNotLearned,
+                  selected: showAlreadyLearned,
+                  // selected: ref.read(settingsProvider.notifier).value
                   text: "yesss",
                 ),
                 //only show new words button
                 MenuButton(
                   onTap: () {
-                    setState(() {
-                      showOnlyNotLearned = true;
-                    });
+                    // setState(() {
+                    //   showOnlyNotLearned = true;
+                    // });
+                    ref.read(settingsProvider.notifier).setShowAlreadyLearned(false);
                   },
-                  selected: showOnlyNotLearned,
+                  selected: !showAlreadyLearned,
                   text: "nooo",
                 ),
               ],
@@ -97,31 +106,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 //show home language first
                 MenuButton(
                   onTap: () {
-                    setState(() {
-                      currentLanguageMode = LanguageMode.HomeLanguageFirst;
-                    });
+                    // setState(() {
+                    //   currentLanguageMode = LanguageMode.HomeLanguageFirst;
+                    // });
+                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.home);
                   },
-                  selected: currentLanguageMode == LanguageMode.HomeLanguageFirst,
+                  selected: languageMode == LanguageMode.home,
                   text: "home",
                 ),
                 //show foreign language first
                 MenuButton(
                   onTap: () {
-                    setState(() {
-                      currentLanguageMode = LanguageMode.ForeignLanguageFirst;
-                    });
+                    // setState(() {
+                    //   currentLanguageMode = LanguageMode.ForeignLanguageFirst;
+                    // });
+                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.foreign);
                   },
-                  selected: currentLanguageMode == LanguageMode.ForeignLanguageFirst,
+                  selected: languageMode == LanguageMode.foreign,
                   text: "foreign",
                 ),
                 //random language first
                 MenuButton(
                   onTap: () {
-                    setState(() {
-                      currentLanguageMode = LanguageMode.RandomLanguageFirst;
-                    });
+                    // setState(() {
+                    //   currentLanguageMode = LanguageMode.RandomLanguageFirst;
+                    // });
+                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.random);
                   },
-                  selected: currentLanguageMode == LanguageMode.RandomLanguageFirst,
+                  selected: languageMode == LanguageMode.random,
                   text: "random",
                 ),
               ],
@@ -144,17 +156,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 MenuButton(
                   onTap: () async {
                     try {
-                      await BackupService.exportBackup(ref.read(wordStateProvider).requireValue);
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(const SnackBar(content: Text("Backup erfolgreich erstellt!")));
+                      final saved = await BackupService.exportBackup(
+                        ref.read(wordStateProvider).requireValue,
+                      );
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            saved ? "Backup erfolgreich erstellt!" : "Backup abgebrochen",
+                          ),
+                        ),
+                      );
                     } catch (e) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text("Fehler beim Backup erstellen: $e")));
+                      if (!context.mounted) return;
+                      context.showError(e);
                     }
                   },
-                  selected: false,
+
                   text: "Erstellen",
                 ),
                 const SizedBox(width: 10),
@@ -162,17 +180,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 MenuButton(
                   onTap: () async {
                     try {
-                      await BackupService.importBackup(ref);
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(const SnackBar(content: Text("Backup erfolgreich geladen!")));
+                      final loaded = await BackupService.importBackup(ref);
+                      if (!context.mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            loaded ? "Backup erfolgreich geladen!" : "Laden abgebrochen",
+                          ),
+                        ),
+                      );
                     } catch (e) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text("Fehler beim Backup laden: $e")));
+                      if (!context.mounted) return;
+                      context.showError(e);
                     }
                   },
-                  selected: false,
+
                   text: "Laden",
                 ),
               ],

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:voc_trainer/screens/signup_screen.dart';
 import 'package:voc_trainer/screens/home_screen.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:voc_trainer/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,10 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 TextField(
                   controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: "email",
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: "email", border: OutlineInputBorder()),
                 ),
                 SizedBox(height: 20),
                 TextField(
@@ -54,11 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           hiddenPassword = !hiddenPassword;
                         });
                       },
-                      icon: Icon(
-                        hiddenPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
+                      icon: Icon(hiddenPassword ? Icons.visibility_off : Icons.visibility),
                     ),
                   ),
                 ),
@@ -67,10 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.maxFinite,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       backgroundColor: Colors.blueAccent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadiusGeometry.circular(10),
@@ -79,26 +68,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () async {
                       final sm = ScaffoldMessenger.of(context);
                       try {
-                        final authResponse = await supabase.auth
-                            .signInWithPassword(
-                              password: passwordController.text,
-                              email: emailController.text,
-                            );
+                        final authResponse = await supabase.auth.signInWithPassword(
+                          password: passwordController.text,
+                          email: emailController.text,
+                        );
                         if (authResponse.user != null) {
                           sm.showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Logged In: ${authResponse.user!.email!}",
-                              ),
-                            ),
+                            SnackBar(content: Text("Logged In: ${authResponse.user!.email!}")),
                           ); //success
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => HomeScreen()),
-                          );
+                          Navigator.of(
+                            context,
+                          ).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
                         } else {
-                          sm.showSnackBar(
-                            SnackBar(content: Text("Invalid email or pasword")),
-                          );
+                          sm.showSnackBar(SnackBar(content: Text("Invalid email or pasword")));
                         } //success
                       } on AuthException catch (e) {
                         sm.showSnackBar(SnackBar(content: Text(e.message)));
@@ -121,10 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      "Do not have an account yet?",
-                      style: TextStyle(fontSize: 14),
-                    ),
+                    Text("Do not have an account yet?", style: TextStyle(fontSize: 14)),
                     SizedBox(width: 5),
                     GestureDetector(
                       child: Text(

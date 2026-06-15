@@ -5,18 +5,12 @@ class MenuButton extends StatelessWidget {
   final bool selected;
   final String text;
 
-  const MenuButton({
-    super.key,
-    this.onTap,
-    this.selected = false,
-    this.text = "nix",
-  });
+  const MenuButton({super.key, this.onTap, this.selected = false, this.text = "nix"});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-
       child: Container(
         margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
@@ -26,10 +20,7 @@ class MenuButton extends StatelessWidget {
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
-        ),
+        child: Text(text, style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal)),
       ),
     );
   }

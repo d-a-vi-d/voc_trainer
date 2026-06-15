@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
-import 'package:voc_trainer/services/settings_service.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
@@ -16,12 +16,13 @@ class LearnScreen extends ConsumerStatefulWidget {
 }
 
 class _LearnScreenState extends ConsumerState<LearnScreen> {
-  late List<Word> shuffledWords;
+  List<Word> shuffledWords = [];
   int currentIndex = 0;
-  bool showHomeLanguage = true;
 
-  CurrentLanguageMode currentLanguageMode = SettingsService.currentLanguageMode;
-  bool showAlreadyLearned = SettingsService.showAlreadyLearned;
+  late bool showHomeLanguage;
+
+  //CurrentLanguageMode currentLanguageMode = SettingsService.currentLanguageMode;
+  //bool showAlreadyLearned = SettingsService.showAlreadyLearned;
 
   @override
   void initState() {
@@ -29,7 +30,12 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     _initLearning();
   }
 
-  void _initLearning() {
+  void _initLearning() async {
+    // final showAlreadyLearned = ref.read(settingsProvider).value?.showAlreadyLearned ?? false;
+    final settingsState = await ref.read(settingsProvider.future);
+    final showAlreadyLearned = settingsState.showAlreadyLearned;
+
+    _updateShowHomeLanguage();
     final words = ref
         .read(wordStateProvider)
         .requireValue
@@ -39,16 +45,16 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         .toList();
 
     setState(() {
-      _updateShowHomeLanguage();
       shuffledWords = List.from(words)..shuffle();
       currentIndex = 0;
     });
   }
 
   void _updateShowHomeLanguage() {
-    if (currentLanguageMode == CurrentLanguageMode.home) {
+    final languageMode = ref.read(settingsProvider).value?.languageMode ?? LanguageMode.home;
+    if (languageMode == LanguageMode.home) {
       showHomeLanguage = true;
-    } else if (currentLanguageMode == CurrentLanguageMode.foreign) {
+    } else if (languageMode == LanguageMode.foreign) {
       showHomeLanguage = false;
     } else {
       showHomeLanguage = Random().nextBool();
@@ -113,13 +119,18 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     });
   }
 
-  // build() bleibt gleich, nur WordService.update() ist weg
   @override
   Widget build(BuildContext context) {
-    Word? currentWord = null;
-    if (shuffledWords.isNotEmpty) {
-      currentWord = shuffledWords[currentIndex];
-    }
+    final settingsAsync = ref.watch(settingsProvider);
+
+    if (settingsAsync.isLoading || !settingsAsync.hasValue)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    if (settingsAsync.hasError)
+      return const Scaffold(body: Center(child: Text("Fehler beim Laden der Einstellungen")));
+
+    final currentWord = shuffledWords.isNotEmpty ? shuffledWords[currentIndex] : null;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Lernen: ${widget.language}'),
@@ -129,8 +140,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                builder: (context) => StatefulBuilder(
-                  builder: (context, setState) {
+                builder: (context) => Consumer(
+                  builder: (context, ref, child) {
+                    final settings = ref.watch(settingsProvider).requireValue;
                     return Container(
                       padding: const EdgeInsets.fromLTRB(10, 10, 10, 50),
                       child: Column(
@@ -162,24 +174,22 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                               //show all words button
                               MenuButton(
                                 onTap: () {
-                                  setState(() {
-                                    //todo
-                                    showAlreadyLearned = false;
-                                    _initLearning();
-                                  });
+                                  ref.read(settingsProvider.notifier).setShowAlreadyLearned(false);
+
+                                  _initLearning();
                                 },
-                                selected: !showAlreadyLearned,
+                                selected: !settings.showAlreadyLearned,
                                 text: "yesss",
                               ),
                               //only show new words button
                               MenuButton(
                                 onTap: () {
-                                  setState(() {
-                                    showAlreadyLearned = true;
-                                    _initLearning();
-                                  });
+                                  ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
+
+                                  // showAlreadyLearned = true;
+                                  _initLearning();
                                 },
-                                selected: showAlreadyLearned,
+                                selected: settings.showAlreadyLearned,
                                 text: "nooo",
                               ),
                             ],
@@ -202,37 +212,40 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                               //show home language first
                               MenuButton(
                                 onTap: () {
-                                  setState(() {
-                                    currentLanguageMode = CurrentLanguageMode.home;
-                                    _initLearning(); //Liste neu aufbauen
-                                  });
+                                  ref
+                                      .read(settingsProvider.notifier)
+                                      .setLanguageMode(LanguageMode.home);
+
+                                  // currentLanguageMode = CurrentLanguageMode.home;
+                                  _initLearning(); //Liste neu aufbauen
                                 },
-                                //todo
-                                selected: currentLanguageMode == CurrentLanguageMode.home,
+
+                                selected: settings.languageMode == LanguageMode.home,
                                 text: "home",
                               ),
                               //show foreign language first
                               MenuButton(
                                 onTap: () {
-                                  setState(() {
-                                    currentLanguageMode = CurrentLanguageMode.foreign;
-                                    _initLearning(); //Liste neu aufbauen
-                                  });
+                                  ref
+                                      .read(settingsProvider.notifier)
+                                      .setLanguageMode(LanguageMode.foreign);
+
+                                  _initLearning(); //Liste neu aufbauen
                                 },
-                                //todo
-                                selected: currentLanguageMode == CurrentLanguageMode.foreign,
+
+                                selected: settings.languageMode == LanguageMode.foreign,
                                 text: "foreign",
                               ),
                               //random language first
                               MenuButton(
                                 onTap: () {
-                                  setState(() {
-                                    currentLanguageMode = CurrentLanguageMode.random;
-                                    _initLearning(); //Liste neu aufbauen
-                                  });
+                                  ref
+                                      .read(settingsProvider.notifier)
+                                      .setLanguageMode(LanguageMode.random);
+                                  _initLearning(); //Liste neu aufbauen
                                 },
-                                //todo
-                                selected: currentLanguageMode == CurrentLanguageMode.random,
+
+                                selected: settings.languageMode == LanguageMode.random,
                                 text: "random",
                               ),
                             ],
@@ -278,7 +291,6 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                       ),
                       onPressed: () {
                         setState(() {
-                          //todo
                           showHomeLanguage = !showHomeLanguage;
                         });
                       },

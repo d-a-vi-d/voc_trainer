@@ -3,13 +3,13 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:voc_trainer/helps/help_login.dart' hide LoginScreen, supabase;
 import 'package:voc_trainer/provider/auth_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/home_screen.dart';
 import 'dart:async';
 
-import 'package:voc_trainer/screens/login_screen.dart';
+import 'package:voc_trainer/main.dart';
+import 'package:voc_trainer/utils/auth_screen.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
@@ -40,7 +40,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Future<void> _handleUri(Uri uri) async {
     if (uri.host == 'login-callback') {
-      Supabase.instance.client.auth.getSessionFromUrl(uri);
+      supabase.auth.getSessionFromUrl(uri);
       // navigieren z.B. Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -52,7 +52,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
     if (userAsync.isLoading)
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (userAsync.value?.session == null) return const LoginScreen();
+    if (userAsync.value?.session == null) return const AuthScreen();
 
     if (wordStateAsync.hasError) {
       return Scaffold(
@@ -84,7 +84,6 @@ class _AppShellState extends ConsumerState<AppShell> {
       );
     }
 
-    // Warten bis BEIDE geladen sind
     if (!wordStateAsync.hasValue) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }

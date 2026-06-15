@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frag_mama_papa/utils/app_colors.dart';
+//import 'package:frag_mama_papa/utils/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -19,8 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: AppColors.neutralLight,
 
+      //backgroundColor: AppColors.neutralLight,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
