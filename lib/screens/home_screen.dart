@@ -19,7 +19,25 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool searchMode = false;
   final searchController = TextEditingController();
+  final scrollController = ScrollController();
   int selectedLangIndex = 0;
+  bool _isAtBottom = false;
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(_updateScrollPosition);
+  }
+
+  void _updateScrollPosition() {
+    if (!scrollController.hasClients) return;
+    final atBottom =
+        scrollController.offset >=
+        scrollController.position.maxScrollExtent - 20; // kleine Toleranz
+    if (atBottom != _isAtBottom) {
+      setState(() => _isAtBottom = atBottom);
+    }
+  }
 
   Future<void> showAddWordDialog(BuildContext context, Language currentLanguage) async {
     final myFocusNode = FocusNode();
@@ -30,7 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       barrierDismissible: false,
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Neues Wort für ${currentLanguage.label}'),
+        title: Text('New word for ${currentLanguage.label}'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -266,8 +284,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 8),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 75),
+                  controller: scrollController,
+                  padding: const EdgeInsets.only(left: 8, right: 8, top: 8, bottom: 150),
                   itemCount: words.length,
+                  itemExtent: WordTile.itemExtent,
                   itemBuilder: (context, index) {
                     final word = words[index];
                     return WordTile(
@@ -323,9 +343,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => showAddWordDialog(context, currentLanguage),
-            child: const Icon(Icons.add),
+          floatingActionButton: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              FloatingActionButton(
+                heroTag: 'fab1', // Unique tag required
+                onPressed: () {
+                  if (!scrollController.hasClients) return;
+                  scrollController.jumpTo(
+                    _isAtBottom ? 0 : scrollController.position.maxScrollExtent,
+                  );
+                },
+                child: Icon(_isAtBottom ? Icons.arrow_upward : Icons.arrow_downward),
+              ),
+              const SizedBox(height: 10),
+              FloatingActionButton(
+                heroTag: 'fab2', // Unique tag required
+                onPressed: () => showAddWordDialog(context, currentLanguage),
+                child: const Icon(Icons.add),
+              ),
+            ],
           ),
         );
       },
@@ -334,7 +372,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    scrollController.removeListener(_updateScrollPosition);
     searchController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 }

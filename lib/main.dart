@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Vokabeltrainer',
+      title: 'VocTrainer',
       theme: ThemeData(primarySwatch: Colors.green),
       home: const AppShell(),
     );
@@ -46,12 +46,14 @@ class MyApp extends StatelessWidget {
 // validierung
 // supabase.auth in den provider
 // app shell sollte managen wo man ist
-
-// "backup erfolgreich erstellt"
+// mehrzeiligen text im learnmode zentrieren
 
 //! Features
-// drittes Feld für Aussprache
+// runterscroll Funktion
 // Marker für Wörter (!)
+// notizen je sprache
+// drittes Feld für Aussprache
+
 // immer Lernbündel
 // mehrere Sprachen gleichzeitig
 // Auto Modus mit Audio
