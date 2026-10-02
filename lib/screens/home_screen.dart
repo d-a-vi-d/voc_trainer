@@ -163,20 +163,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLanguageTile(Language language, {required bool selected}) => Container(
-    margin: const EdgeInsets.all(5),
-    decoration: BoxDecoration(
-      color: selected ? Colors.green : Colors.white,
-      borderRadius: BorderRadius.circular(15),
-      border: Border.all(color: Colors.black, width: 3),
-    ),
-    alignment: Alignment.center,
-    padding: const EdgeInsets.all(10),
-    child: Text(
-      language.label,
-      style: TextStyle(fontSize: 20, fontWeight: selected ? FontWeight.bold : FontWeight.normal),
-    ),
-  );
+  Widget _buildLanguageTile(Language language, {required bool selected}) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: selected ? Colors.green : scheme.surface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: scheme.onSurface, width: 3),
+      ),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(10),
+      child: Text(
+        language.label,
+        style: TextStyle(
+          fontSize: 20,
+          color: selected ? Colors.black : scheme.onSurface,
+          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
 
   // Desktop: sofort ziehen. Touch: erst nach langem Drücken, damit Scrollen möglich bleibt.
   Widget _dragStartListener({Key? key, required int index, required Widget child}) {
@@ -344,9 +351,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Container(
                     margin: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.black, width: 3),
+                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
                     ),
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(10),

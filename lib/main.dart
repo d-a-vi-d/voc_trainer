@@ -40,6 +40,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'VocTrainer',
       theme: ThemeData(primarySwatch: Colors.green),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.dark),
+      ),
+      themeMode: ThemeMode.system,
       home: const AppShell(),
     );
   }
