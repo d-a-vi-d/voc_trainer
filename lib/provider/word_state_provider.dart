@@ -1,9 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/models/word.dart';
 import 'package:voc_trainer/models/word_state.dart';
 import 'package:voc_trainer/utils/special_exception.dart';
 import '../main.dart';
+import 'auth_provider.dart';
 
 part 'word_state_provider.g.dart';
 
@@ -11,8 +13,13 @@ part 'word_state_provider.g.dart';
 class WordStateNotifier extends _$WordStateNotifier {
   @override
   Future<WordState> build() async {
-    //  final user = ref.watch(authProvider);
-    // if (user == null) return null;
+    // Neu laden, sobald sich der eingeloggte User ändert (Login/Logout)
+    final userId =
+        ref.watch(authProvider.select((s) => s.value?.session?.user.id)) ??
+        supabase.auth.currentUser?.id;
+    if (userId == null) {
+      return WordState(words: [], languages: []);
+    }
 
     final languagesRaw = await supabase.from('languages').select('id, label');
 
