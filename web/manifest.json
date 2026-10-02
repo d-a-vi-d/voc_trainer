@@ -1,11 +1,11 @@
 {
-    "name": "voc_trainer",
-    "short_name": "voc_trainer",
+    "name": "VocTrainer",
+    "short_name": "VocTrainer",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#4CAF50",
+    "description": "Vokabeln lernen und verwalten: eigene Sprachen, eigene Wortlisten.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
