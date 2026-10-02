@@ -6,6 +6,7 @@ import 'package:voc_trainer/widgets/app_shell.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final supabase = Supabase.instance.client;
 
@@ -16,11 +17,16 @@ void main() async {
   final anonKey = dotenv.get('SUPABASE_ANON_KEY');
   await Supabase.initialize(url: supabaseUrl, publishableKey: anonKey);
 
-  final appLinks = AppLinks();
-
-  final initialUri = await appLinks.getInitialLink();
-  if (initialUri != null) {
-    await supabase.auth.getSessionFromUrl(initialUri);
+  // Web: supabase_flutter wertet den Login-Redirect selbst aus.
+  if (!kIsWeb) {
+    final initialUri = await AppLinks().getInitialLink();
+    if (initialUri != null) {
+      try {
+        await supabase.auth.getSessionFromUrl(initialUri);
+      } catch (_) {
+        // Link enthielt keinen Auth-Code, ignorieren
+      }
+    }
   }
   runApp(const ProviderScope(child: MyApp()));
 }

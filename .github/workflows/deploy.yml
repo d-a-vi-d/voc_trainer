@@ -21,8 +21,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          channel: beta
+          flutter-version: '3.45.0-0.1.pre'
           cache: true
+      - name: .env aus Secrets erzeugen
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
       - run: flutter pub get
       - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
       - uses: actions/configure-pages@v5
