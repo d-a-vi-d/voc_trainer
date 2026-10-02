@@ -42,7 +42,7 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
       margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green, Colors.white],
+          colors: [Colors.green, Theme.of(context).colorScheme.surface],
           stops: total == 0 || progress == 0
               ? [0.0, 0.0]
               : progress == 1
@@ -50,7 +50,7 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
               : [progress - 0.01, progress + 0.01],
         ),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black, width: 3),
+        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
       ),
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.all(10),

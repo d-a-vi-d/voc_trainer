@@ -55,7 +55,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(
                 fontSize: 20, // Größerer Text
                 fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
-                color: Colors.black87, // Weicheres Schwarz
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.87), // Weicheres Schwarz
                 letterSpacing: 0.5, // Leichter Buchstabenabstand
               ),
             ),
@@ -95,7 +97,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.87),
                 letterSpacing: 0.5,
               ),
             ),
@@ -144,7 +146,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.87),
                 letterSpacing: 0.5,
               ),
             ),

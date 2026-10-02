@@ -14,9 +14,9 @@ class MenuButton extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: selected ? Colors.green : Colors.white,
+          color: selected ? Colors.green : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.black, width: 3),
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),
