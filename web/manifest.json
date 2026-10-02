@@ -4,7 +4,6 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
-    "theme_color": "#4CAF50",
     "description": "Vokabeln lernen und verwalten: eigene Sprachen, eigene Wortlisten.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,

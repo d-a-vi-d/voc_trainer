@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:voc_trainer/utils/app_colors.dart';
 
 class MenuButton extends StatelessWidget {
   final GestureTapCallback? onTap;
@@ -14,9 +15,9 @@ class MenuButton extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: selected ? Colors.green : Theme.of(context).colorScheme.surface,
+          color: AppColors.tileBackground(context, selected: selected),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
+          border: AppColors.tileBorder(context),
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 9),

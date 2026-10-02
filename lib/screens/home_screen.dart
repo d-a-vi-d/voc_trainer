@@ -4,6 +4,7 @@ import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/languages_overview_screen.dart';
+import 'package:voc_trainer/utils/app_colors.dart';
 import 'learn_screen.dart';
 import '../models/word.dart';
 import 'package:voc_trainer/screens/settings_screen.dart';
@@ -163,27 +164,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLanguageTile(Language language, {required bool selected}) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: selected ? Colors.green : scheme.surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: scheme.onSurface, width: 3),
+  Widget _buildLanguageTile(Language language, {required bool selected}) => Container(
+    margin: const EdgeInsets.all(5),
+    decoration: BoxDecoration(
+      color: AppColors.tileBackground(context, selected: selected),
+      borderRadius: BorderRadius.circular(15),
+      border: AppColors.tileBorder(context),
+    ),
+    alignment: Alignment.center,
+    padding: const EdgeInsets.all(10),
+    child: Text(
+      language.label,
+      style: TextStyle(
+        fontSize: 20,
+        color: AppColors.text(context),
+        fontWeight: selected ? FontWeight.bold : FontWeight.normal,
       ),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(10),
-      child: Text(
-        language.label,
-        style: TextStyle(
-          fontSize: 20,
-          color: selected ? Colors.black : scheme.onSurface,
-          fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
+    ),
+  );
 
   // Desktop: sofort ziehen. Touch: erst nach langem Drücken, damit Scrollen möglich bleibt.
   Widget _dragStartListener({Key? key, required int index, required Widget child}) {
@@ -351,9 +349,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Container(
                     margin: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
+                      color: AppColors.tileBackground(context),
                       borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
+                      border: AppColors.tileBorder(context),
                     ),
                     alignment: Alignment.center,
                     padding: const EdgeInsets.all(10),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
+import 'package:voc_trainer/utils/app_colors.dart';
 
 class LanguagesOverviewScreen extends ConsumerStatefulWidget {
   final Future<void> Function(Language language) onDeleteLanguage;
@@ -42,7 +43,7 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
       margin: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.green, Theme.of(context).colorScheme.surface],
+          colors: [Colors.green, AppColors.tileBackground(context)],
           stops: total == 0 || progress == 0
               ? [0.0, 0.0]
               : progress == 1
@@ -50,7 +51,7 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
               : [progress - 0.01, progress + 0.01],
         ),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3),
+        border: AppColors.tileBorder(context),
       ),
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.all(10),

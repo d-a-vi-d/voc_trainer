@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
+import 'package:voc_trainer/utils/app_colors.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
@@ -163,9 +164,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                             style: TextStyle(
                               fontSize: 20, // Größerer Text
                               fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.87),
+                              color: AppColors.text(context),
                               letterSpacing: 0.5, // Leichter Buchstabenabstand
                             ),
                           ),
@@ -203,9 +202,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.87),
+                              color: AppColors.text(context),
                               letterSpacing: 0.5,
                             ),
                           ),
