@@ -20,8 +20,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool searchMode = false;
   final searchController = TextEditingController();
   final scrollController = ScrollController();
-  int selectedLangIndex = 0;
+
   bool _isAtBottom = false;
+  // ersetzt: int selectedLangIndex = 0;
+  int? selectedLangId;
 
   @override
   void initState() {
@@ -149,12 +151,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           TextButton(
             onPressed: () async {
               await ref.read(wordStateProvider.notifier).removeLanguage(language);
-              final newLength = ref.read(wordStateProvider).requireValue.languages.length;
-              if (selectedLangIndex >= newLength) {
-                setState(
-                  () => selectedLangIndex = (newLength - 1).clamp(0, double.maxFinite.toInt()),
-                );
-              }
+              if (!context.mounted) return;
+              // War die gelöschte Sprache ausgewählt, springt die Auswahl auf die erste.
+              if (selectedLangId == language.id) setState(() => selectedLangId = null);
               Navigator.pop(context);
             },
             child: const Text('Löschen', style: TextStyle(color: Colors.red)),
@@ -164,23 +163,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLanguagetile(int index, List<Language> languages) => Container(
+  Widget _buildLanguageTile(Language language, {required bool selected}) => Container(
     margin: const EdgeInsets.all(5),
     decoration: BoxDecoration(
-      color: index == selectedLangIndex ? Colors.green : Colors.white,
+      color: selected ? Colors.green : Colors.white,
       borderRadius: BorderRadius.circular(15),
       border: Border.all(color: Colors.black, width: 3),
     ),
     alignment: Alignment.center,
     padding: const EdgeInsets.all(10),
     child: Text(
-      languages[index].label,
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: index == selectedLangIndex ? FontWeight.bold : FontWeight.normal,
-      ),
+      language.label,
+      style: TextStyle(fontSize: 20, fontWeight: selected ? FontWeight.bold : FontWeight.normal),
     ),
   );
+
+  // Desktop: sofort ziehen. Touch: erst nach langem Drücken, damit Scrollen möglich bleibt.
+  Widget _dragStartListener({Key? key, required int index, required Widget child}) {
+    final isDesktop = const {
+      TargetPlatform.windows,
+      TargetPlatform.linux,
+      TargetPlatform.macOS,
+    }.contains(Theme.of(context).platform);
+    return isDesktop
+        ? ReorderableDragStartListener(key: key, index: index, child: child)
+        : ReorderableDelayedDragStartListener(key: key, index: index, child: child);
+  }
+
+  Future<void> _reorderLanguages(int oldIndex, int newIndex) async {
+    try {
+      await ref.read(wordStateProvider.notifier).reorderLanguages(oldIndex, newIndex);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Reihenfolge konnte nicht gespeichert werden')));
+    }
+  }
 
   List<Word> _getWordsForSearch(List<Word> allWords, Language currentLanguage, String searchInput) {
     return allWords.where((w) {
@@ -209,10 +228,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           );
         }
-        if (selectedLangIndex >= state.languages.length) {
-          selectedLangIndex = state.languages.length - 1;
-        }
-        final currentLanguage = state.languages[selectedLangIndex];
+        // if (selectedLangIndex >= state.languages.length) {
+        //   selectedLangIndex = state.languages.length - 1;
+        // }
+        // final currentLanguage = state.languages[selectedLangIndex];
+
+        final currentLanguage = state.languages.firstWhere(
+          (l) => selectedLangId != null && l.id == selectedLangId,
+          orElse: () => state.languages.first,
+        );
         final words = searchMode
             ? _getWordsForSearch(state.words, currentLanguage, searchController.text)
             : state.words.where((w) => w.languageId == currentLanguage.id).toList();
@@ -305,40 +329,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: SizedBox(
               height: 90,
               child: ReorderableListView(
-                proxyDecorator: (child, index, _) => _buildLanguagetile(index, state.languages),
                 scrollDirection: Axis.horizontal,
-                onReorderItem: (oldIndex, newIndex) {
-                  setState(() {
-                    final previouslySelected = state.languages[selectedLangIndex];
-                    final langs = [...state.languages];
-                    final item = langs.removeAt(oldIndex);
-                    langs.insert(newIndex, item);
-                    selectedLangIndex = langs.indexOf(previouslySelected);
-                    if (selectedLangIndex == -1) selectedLangIndex = 0;
-                  });
-                },
+                buildDefaultDragHandles: false,
+                proxyDecorator: (child, index, _) => Material(
+                  type: MaterialType.transparency,
+                  child: _buildLanguageTile(
+                    state.languages[index],
+                    selected: state.languages[index].id == currentLanguage.id,
+                  ),
+                ),
+                onReorderItem: _reorderLanguages,
+                footer: GestureDetector(
+                  onTap: _addLanguageDialog,
+                  child: Container(
+                    margin: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.black, width: 3),
+                    ),
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(10),
+                    child: const Icon(Icons.add),
+                  ),
+                ),
                 children: [
                   for (int i = 0; i < state.languages.length; i++)
-                    GestureDetector(
-                      key: Key('lang_$i'),
-                      onTap: () => setState(() => selectedLangIndex = i),
-                      child: _buildLanguagetile(i, state.languages),
-                    ),
-                  GestureDetector(
-                    key: const Key('add_button'),
-                    onTap: _addLanguageDialog,
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Colors.black, width: 3),
+                    _dragStartListener(
+                      key: ValueKey(state.languages[i].id ?? 'pending_${state.languages[i].label}'),
+                      index: i,
+                      child: GestureDetector(
+                        onTap: state.languages[i].id == null
+                            ? null
+                            : () => setState(() => selectedLangId = state.languages[i].id),
+                        child: _buildLanguageTile(
+                          state.languages[i],
+                          selected: state.languages[i].id == currentLanguage.id,
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(10),
-                      child: const Icon(Icons.add),
                     ),
-                  ),
                 ],
               ),
             ),

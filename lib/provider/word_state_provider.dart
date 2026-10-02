@@ -24,8 +24,8 @@ class WordStateNotifier extends _$WordStateNotifier {
     final languagesRaw = await supabase
         .from('languages')
         .select('id, label')
-        .order('position')
-        .order('id'); // Tie-Breaker, damit die Reihenfolge immer eindeutig ist
+        .order('position', ascending: true)
+        .order('id', ascending: true); // Tie-Breaker, damit die Reihenfolge immer eindeutig ist
 
     final languages = languagesRaw.map((l) => Language.fromJson(l)).toList();
 
@@ -39,7 +39,7 @@ class WordStateNotifier extends _$WordStateNotifier {
       final batch = await supabase
           .from('words')
           .select('*, languages(label)')
-          .order('id')
+          .order('id', ascending: true)
           .range(offset, offset + batchSize - 1);
 
       allWordsRaw.addAll(batch);
