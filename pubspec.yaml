@@ -31,7 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   dotted_border: ^3.1.0
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.5
   drag_and_drop_lists: ^0.4.0
   linear_progress_bar: "^1.2.0"
   app_links: ^7.1.1

@@ -20,12 +20,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
+    final darkMode = settingsAsync.requireValue.darkMode;
 
-    if (settingsAsync.isLoading || !settingsAsync.hasValue)
+    if (settingsAsync.isLoading || !settingsAsync.hasValue) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-    if (settingsAsync.hasError)
+    if (settingsAsync.hasError) {
       return const Scaffold(body: Center(child: Text("Fehler beim Laden der Einstellungen")));
+    }
 
     final showAlreadyLearned = settingsAsync.requireValue.showAlreadyLearned;
     final languageMode = settingsAsync.requireValue.languageMode;
@@ -51,6 +54,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              "Design",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text(context),
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                MenuButton(
+                  onTap: () async {
+                    try {
+                      await ref.read(settingsProvider.notifier).setDarkMode(false);
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      context.showError(e);
+                    }
+                  },
+                  selected: !darkMode,
+                  text: "Hell",
+                ),
+                MenuButton(
+                  onTap: () async {
+                    try {
+                      await ref.read(settingsProvider.notifier).setDarkMode(true);
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      context.showError(e);
+                    }
+                  },
+                  selected: darkMode,
+                  text: "Dunkel",
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
             Text(
               "Show already learned?",
               style: TextStyle(
