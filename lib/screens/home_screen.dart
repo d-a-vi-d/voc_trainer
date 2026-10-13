@@ -303,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     context,
                     MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage.label)),
                   ),
-                  child: const Text('Lernen'),
+                  child: const Text('Learn'),
                 ),
               ],
             ],
