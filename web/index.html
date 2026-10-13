@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -32,6 +33,22 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script>
+    (function () {
+      var KEY = 'flutter._darkModeKey'; // = 'flutter.' + dein _darkModeKey
+      function apply(v) {
+        var c = v === 'true' ? '#121212' : '#FFFFFF'; // an deine Scaffold-Farben anpassen
+        document.documentElement.style.backgroundColor = c;
+        document.body.style.backgroundColor = c;
+      }
+      apply(localStorage.getItem(KEY)); // beim Start
+      var orig = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (k, v) { // beim Umschalten
+        orig.apply(this, arguments);
+        if (k === KEY) apply(v);
+      };
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

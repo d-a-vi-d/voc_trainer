@@ -70,6 +70,7 @@ class MyApp extends ConsumerWidget {
     final isDark = ref.watch(settingsProvider.select((s) => s.value?.darkMode ?? false));
 
     return MaterialApp(
+      color: isDark ? const Color(0xFF121212) : Colors.white,
       debugShowCheckedModeBanner: false,
 
       title: 'VocTrainer',
