@@ -176,10 +176,10 @@ class _EditWordDialogState extends ConsumerState<_EditWordDialog> {
           children: [
             TextButton(
               onPressed: _delete,
-              child: const Text('Löschen', style: TextStyle(color: Colors.red)),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
             ),
-            // TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
-            TextButton(onPressed: _save, child: const Text('Speichern')),
+            // TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(onPressed: _save, child: const Text('Save')),
           ],
         ),
       ],

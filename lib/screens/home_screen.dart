@@ -75,7 +75,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text(alreadyEnteredAWord ? 'Fertig' : 'Abbrechen'),
+                    child: Text(alreadyEnteredAWord ? 'Done' : 'Cancel'),
                   ),
                   TextButton(
                     onPressed: () {
@@ -143,12 +143,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sprache löschen'),
-        content: Text(
-          'Möchtest du "${language.label}" und alle zugehörigen Wörter wirklich löschen?',
-        ),
+        title: const Text('Delete language'),
+        content: Text('Do you want to delete "${language.label}" and all related words?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               await ref.read(wordStateProvider.notifier).removeLanguage(language);
