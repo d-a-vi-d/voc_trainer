@@ -27,7 +27,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     if (settingsAsync.hasError) {
-      return const Scaffold(body: Center(child: Text("Fehler beim Laden der Einstellungen")));
+      return const Scaffold(body: Center(child: Text("Error while loading settings")));
     }
 
     final showAlreadyLearned = settingsAsync.requireValue.showAlreadyLearned;
@@ -77,7 +77,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
                   selected: !darkMode,
-                  text: "Hell",
+                  text: "Bright",
                 ),
                 MenuButton(
                   onTap: () async {
@@ -89,7 +89,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
                   selected: darkMode,
-                  text: "Dunkel",
+                  text: "Dark",
                 ),
               ],
             ),
@@ -207,7 +207,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            saved ? "Backup erfolgreich erstellt!" : "Backup abgebrochen",
+                            saved ? "Backup successfully created!" : "Backup cancelled",
                           ),
                         ),
                       );
@@ -217,7 +217,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
 
-                  text: "Erstellen",
+                  text: "Create",
                 ),
                 const SizedBox(width: 10),
                 // Backup laden
@@ -230,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            loaded ? "Backup erfolgreich geladen!" : "Laden abgebrochen",
+                            loaded ? "Backup succesfully loaded!" : "Loading cancelled",
                           ),
                         ),
                       );
@@ -240,7 +240,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
 
-                  text: "Laden",
+                  text: "Load",
                 ),
               ],
             ),

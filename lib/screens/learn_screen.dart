@@ -70,9 +70,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         context: context,
         builder: (context) => AlertDialog(
           actionsAlignment: MainAxisAlignment.spaceBetween,
-          title: const Text('Ende der Liste'),
+          title: const Text('End of the list'),
           content: const Text(
-            'Du hast das Ende der Liste erreicht! Möchtest du von vorne beginnen oder zur Übersicht wechseln?',
+            'You reached the end of the list! Do you want to start over or go the the homescreen?',
           ),
           actions: [
             TextButton(
@@ -80,14 +80,14 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: const Text('Übersicht'),
+              child: const Text('Homescreen'),
             ),
             TextButton(
               onPressed: () {
                 _initLearning();
                 Navigator.pop(context);
               },
-              child: const Text('Neu starten'),
+              child: const Text('Start over'),
             ),
           ],
         ),
@@ -124,17 +124,19 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
 
-    if (settingsAsync.isLoading || !settingsAsync.hasValue)
+    if (settingsAsync.isLoading || !settingsAsync.hasValue) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-    if (settingsAsync.hasError)
-      return const Scaffold(body: Center(child: Text("Fehler beim Laden der Einstellungen")));
+    if (settingsAsync.hasError) {
+      return const Scaffold(body: Center(child: Text("Error while loading settings")));
+    }
 
     final currentWord = shuffledWords.isNotEmpty ? shuffledWords[currentIndex] : null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lernen: ${widget.language}'),
+        title: Text('Learn: ${widget.language}'),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),
@@ -263,7 +265,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
       ),
 
       body: shuffledWords.isEmpty
-          ? const Center(child: Text('Keine Wörter verfügbar.'))
+          ? const Center(child: Text('No words found.'))
           : Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

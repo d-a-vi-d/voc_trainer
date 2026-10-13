@@ -100,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         myFocusNode.requestFocus();
                       }
                     },
-                    child: const Text('Hinzufügen'),
+                    child: const Text('Add word'),
                   ),
                 ],
               );
@@ -116,14 +116,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sprache hinzufügen'),
+        title: const Text('Add language'),
         content: TextField(
           autofocus: true,
           controller: addLanguageController,
-          decoration: const InputDecoration(labelText: 'Sprache'),
+          decoration: const InputDecoration(labelText: 'Language'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Abbrechen')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               final newLang = addLanguageController.text.trim();
@@ -132,7 +132,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }
               Navigator.pop(context);
             },
-            child: const Text('Hinzufügen'),
+            child: const Text('Add language'),
           ),
         ],
       ),
@@ -226,7 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       data: (state) {
         if (state.languages.isEmpty) {
           return Scaffold(
-            body: const Center(child: Text('Keine Sprachen vorhanden')),
+            body: const Center(child: Text('No languages found')),
             floatingActionButton: FloatingActionButton(
               onPressed: _addLanguageDialog,
               child: const Icon(Icons.add),
