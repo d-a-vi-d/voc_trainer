@@ -190,7 +190,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                                 selected: !settings.showAlreadyLearned,
                                 text: "yesss",
                               ),
-                              //only show new words button
+                              //only show unlearned words button
                               MenuButton(
                                 onTap: () {
                                   ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
@@ -226,7 +226,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                                       .setLanguageMode(LanguageMode.home);
 
                                   // currentLanguageMode = CurrentLanguageMode.home;
-                                  _initLearning(); //Liste neu aufbauen
+                                  //_initLearning(); //Liste neu aufbauen
                                 },
 
                                 selected: settings.languageMode == LanguageMode.home,
@@ -239,7 +239,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                                       .read(settingsProvider.notifier)
                                       .setLanguageMode(LanguageMode.foreign);
 
-                                  _initLearning(); //Liste neu aufbauen
+                                  //_initLearning(); //Liste neu aufbauen
                                 },
 
                                 selected: settings.languageMode == LanguageMode.foreign,
@@ -251,7 +251,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                                   ref
                                       .read(settingsProvider.notifier)
                                       .setLanguageMode(LanguageMode.random);
-                                  _initLearning(); //Liste neu aufbauen
+                                  //_initLearning(); //Liste neu aufbauen
                                 },
 
                                 selected: settings.languageMode == LanguageMode.random,
