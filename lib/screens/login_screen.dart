@@ -15,6 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool hiddenPassword = true;
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,106 +26,129 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(15.0),
-            child: Column(
-              children: [
-                Image.asset(
-                  "assets/vectorelements-lBU7MhUv4LQ-unsplash.png",
-                  width: double.maxFinite,
-                  height: 400,
-                  fit: BoxFit.cover,
-                ),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(labelText: "email", border: OutlineInputBorder()),
-                ),
-                SizedBox(height: 20),
-                TextField(
-                  controller: passwordController,
-                  obscureText: hiddenPassword,
-                  decoration: InputDecoration(
-                    labelText: "password",
-                    border: OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          hiddenPassword = !hiddenPassword;
-                        });
-                      },
-                      icon: Icon(hiddenPassword ? Icons.visibility_off : Icons.visibility),
-                    ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Image.asset(
+                    "assets/vectorelements-lBU7MhUv4LQ-unsplash.png",
+                    width: double.maxFinite,
+                    height: 400,
+                    fit: BoxFit.cover,
                   ),
-                ),
-                SizedBox(height: 20),
-                SizedBox(
-                  width: double.maxFinite,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      backgroundColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(10),
-                      ),
-                    ),
-                    onPressed: () async {
-                      final sm = ScaffoldMessenger.of(context);
-                      try {
-                        final authResponse = await supabase.auth.signInWithPassword(
-                          password: passwordController.text,
-                          email: emailController.text,
-                        );
-                        if (authResponse.user != null) {
-                          sm.showSnackBar(
-                            SnackBar(content: Text("Logged In: ${authResponse.user!.email!}")),
-                          ); //success
-                          Navigator.of(
-                            context,
-                          ).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
-                        } else {
-                          sm.showSnackBar(SnackBar(content: Text("Invalid email or pasword")));
-                        } //success
-                      } on AuthException catch (e) {
-                        sm.showSnackBar(SnackBar(content: Text(e.message)));
-                      } catch (e) {
-                        sm.showSnackBar(SnackBar(content: Text("Error:$e")));
-                      }
-                    },
-                    child: Text(
-                      "Login",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text("Do not have an account yet?", style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 5),
-                    GestureDetector(
-                      child: Text(
-                        "Signup here",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                          letterSpacing: -1,
+                    decoration: InputDecoration(labelText: "email", border: OutlineInputBorder()),
+                    validator: (value) {
+                      final v = value?.trim() ?? '';
+                      if (!v.contains('@') || !v.contains('.')) {
+                        return 'Not a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  TextFormField(
+                    controller: passwordController,
+                    obscureText: hiddenPassword,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+
+                    decoration: InputDecoration(
+                      labelText: "password",
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            hiddenPassword = !hiddenPassword;
+                          });
+                        },
+
+                        icon: Icon(hiddenPassword ? Icons.visibility_off : Icons.visibility),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.length < 6) {
+                        return 'At least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  SizedBox(
+                    width: double.maxFinite,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        backgroundColor: Colors.blueAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadiusGeometry.circular(10),
                         ),
                       ),
-                      onTap: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => SignupScreen()),
-                        );
+                      onPressed: () async {
+                        if (!_formKey.currentState!.validate()) return;
+                        final sm = ScaffoldMessenger.of(context);
+                        try {
+                          final authResponse = await supabase.auth.signInWithPassword(
+                            password: passwordController.text,
+                            email: emailController.text,
+                          );
+                          if (authResponse.user != null) {
+                            sm.showSnackBar(
+                              SnackBar(content: Text("Logged In: ${authResponse.user!.email!}")),
+                            ); //success
+                            Navigator.of(
+                              context,
+                            ).pushReplacement(MaterialPageRoute(builder: (_) => HomeScreen()));
+                          } else {
+                            sm.showSnackBar(SnackBar(content: Text("Invalid email or pasword")));
+                          } //success
+                        } on AuthException catch (e) {
+                          sm.showSnackBar(SnackBar(content: Text(e.message)));
+                        } catch (e) {
+                          sm.showSnackBar(SnackBar(content: Text("Error:$e")));
+                        }
                       },
+                      child: Text(
+                        "Login",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text("Do not have an account yet?", style: TextStyle(fontSize: 14)),
+                      SizedBox(width: 5),
+                      GestureDetector(
+                        child: Text(
+                          "Signup here",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => SignupScreen()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
