@@ -7,6 +7,7 @@ import 'package:voc_trainer/utils/app_colors.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
+import 'package:flutter/services.dart';
 
 class LearnScreen extends ConsumerStatefulWidget {
   final String language;
@@ -102,6 +103,11 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
   void _previous() {
     if (shuffledWords.isEmpty || currentIndex == 0) return;
     setState(() => currentIndex = (currentIndex - 1) % shuffledWords.length);
+  }
+
+  void _flip() {
+    if (shuffledWords.isEmpty) return; // showHomeLanguage ist 'late', vorher nicht anfassen
+    setState(() => showHomeLanguage = !showHomeLanguage);
   }
 
   void _toggleLearned() {
@@ -264,64 +270,82 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         ],
       ),
 
-      body: shuffledWords.isEmpty
-          ? const Center(child: Text('No words found.'))
-          : Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: LinearProgressBar(
-                      minHeight: 20,
-                      maxSteps: shuffledWords.length,
-                      progressType: LinearProgressBar.progressTypeLinear, // Use Linear progress
-                      currentStep: currentIndex,
-                      progressColor: Colors.green,
-                      backgroundColor: const Color.fromARGB(255, 208, 208, 208),
-                      borderRadius: BorderRadius.circular(50), //  NEW
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 400),
-                    child: ElevatedButton(
-                      key: ValueKey(showHomeLanguage ? currentWord!.definition : currentWord!.term),
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: const Size(220, 100),
-                        textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                        elevation: 4,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          showHomeLanguage = !showHomeLanguage;
-                        });
-                      },
-                      child: Text(showHomeLanguage ? currentWord.definition : currentWord.term),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: Focus(
+        autofocus: true,
+        child: CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
+            const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
+            const SingleActivator(LogicalKeyboardKey.space): _flip,
+          },
+          child: shuffledWords.isEmpty
+              ? const Center(child: Text('No words found.'))
+              : Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, size: 48),
-                        onPressed: _previous,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          currentWord.learned ? Icons.check_circle : Icons.radio_button_unchecked,
-                          color: currentWord.learned ? Colors.green : Colors.grey,
-                          size: 48,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: LinearProgressBar(
+                          minHeight: 20,
+                          maxSteps: shuffledWords.length,
+                          progressType: LinearProgressBar.progressTypeLinear, // Use Linear progress
+                          currentStep: currentIndex,
+                          progressColor: Colors.green,
+                          backgroundColor: const Color.fromARGB(255, 208, 208, 208),
+                          borderRadius: BorderRadius.circular(50), //  NEW
                         ),
-                        onPressed: _toggleLearned,
                       ),
-                      IconButton(icon: const Icon(Icons.arrow_forward, size: 48), onPressed: _next),
+                      const SizedBox(height: 50),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        child: ElevatedButton(
+                          key: ValueKey(
+                            showHomeLanguage ? currentWord!.definition : currentWord!.term,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(220, 100),
+                            textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                            elevation: 4,
+                          ),
+                          onPressed: _flip,
+                          // onPressed: () {
+                          //   setState(() {
+                          //     showHomeLanguage = !showHomeLanguage;
+                          //   });
+                          // },
+                          child: Text(showHomeLanguage ? currentWord.definition : currentWord.term),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, size: 48),
+                            onPressed: _previous,
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              currentWord.learned
+                                  ? Icons.check_circle
+                                  : Icons.radio_button_unchecked,
+                              color: currentWord.learned ? Colors.green : Colors.grey,
+                              size: 48,
+                            ),
+                            onPressed: _toggleLearned,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_forward, size: 48),
+                            onPressed: _next,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+        ),
+      ),
     );
   }
 }
