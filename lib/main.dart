@@ -108,7 +108,6 @@ class MyApp extends ConsumerWidget {
 // mehrzeiligen text im learnmode zentrieren
 
 //! Features
-// keyboard steuerung am laptop
 // Marker für Wörter (!)
 // notizen je sprache
 // drittes Feld für Aussprache
@@ -116,4 +115,3 @@ class MyApp extends ConsumerWidget {
 // immer Lernbündel
 // mehrere Sprachen gleichzeitig
 // Auto Modus mit Audio
-// offline/ online sync

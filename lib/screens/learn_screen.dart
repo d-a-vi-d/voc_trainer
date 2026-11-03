@@ -270,14 +270,15 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         ],
       ),
 
-      body: Focus(
-        autofocus: true,
-        child: CallbackShortcuts(
-          bindings: {
-            const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
-            const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
-            const SingleActivator(LogicalKeyboardKey.space): _flip,
-          },
+      body: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
+          const SingleActivator(LogicalKeyboardKey.space): _flip,
+        },
+
+        child: Focus(
+          autofocus: true,
           child: shuffledWords.isEmpty
               ? const Center(child: Text('No words found.'))
               : Center(
