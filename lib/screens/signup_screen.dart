@@ -71,7 +71,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     textInputAction: TextInputAction.next,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: const InputDecoration(
-                      labelText: "email",
+                      labelText: "Email",
                       border: OutlineInputBorder(),
                     ),
                     validator: validateEmail,
@@ -84,7 +84,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     onFieldSubmitted: (_) => _submit(),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: InputDecoration(
-                      labelText: "password",
+                      labelText: "Pasword",
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => hiddenPassword = !hiddenPassword),

@@ -73,7 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textInputAction: TextInputAction.next,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: const InputDecoration(
-                      labelText: "email",
+                      labelText: "Email",
                       border: OutlineInputBorder(),
                     ),
                     validator: validateEmail,
@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onFieldSubmitted: (_) => _submit(),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: InputDecoration(
-                      labelText: "password",
+                      labelText: "Pasword",
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => hiddenPassword = !hiddenPassword),
@@ -123,6 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const Text("Do not have an account yet?", style: TextStyle(fontSize: 14)),
                       const SizedBox(width: 5),
+
                       GestureDetector(
                         child: const Text(
                           "Signup here",

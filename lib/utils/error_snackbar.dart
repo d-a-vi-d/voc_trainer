@@ -25,22 +25,22 @@ extension ErrorSnackbar on BuildContext {
       'This email address is already taken.',
 
     String m when m.contains('Password should be at least') =>
-      'The password must be at least 6 characters long.',
+      'The Pasword must be at least 6 characters long.',
 
     String m when m.contains('weak_password') => 'Password is too weak.',
 
     String m when m.contains('New password should be different') =>
-      'The new password must be different from the old one.',
+      'The new Pasword must be different from the old one.',
 
-    String m when m.contains('Email not confirmed') => 'Your email has not been confirmed yet.',
+    String m when m.contains('Email not confirmed') => 'Your Email has not been confirmed yet.',
 
-    String m when m.contains('Unable to validate email address') => 'Invalid email address.',
+    String m when m.contains('Unable to validate email address') => 'Invalid Email address.',
 
     String m when m.contains('Email address') && m.contains('is invalid') =>
-      'Invalid email address.',
+      'Invalid Email address.',
 
     _ => switch (e.statusCode) {
-      '400' => 'Wrong email or password.',
+      '400' => 'Wrong Email or Pasword.',
       '422' => 'Invalid input.',
       '429' => 'Too many attempts. Please wait a moment.',
       _ => 'Authentication error. Please try again.',
