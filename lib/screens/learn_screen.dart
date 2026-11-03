@@ -105,6 +105,22 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     setState(() => currentIndex = (currentIndex - 1) % shuffledWords.length);
   }
 
+  void _first() {
+    if (shuffledWords.isEmpty) return;
+    setState(() {
+      currentIndex = 0;
+      _updateShowHomeLanguage();
+    });
+  }
+
+  void _last() {
+    if (shuffledWords.isEmpty) return;
+    setState(() {
+      currentIndex = shuffledWords.length - 1;
+      _next();
+    });
+  }
+
   void _flip() {
     if (shuffledWords.isEmpty) return; // showHomeLanguage ist 'late', vorher nicht anfassen
     setState(() => showHomeLanguage = !showHomeLanguage);
@@ -275,6 +291,9 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
           const SingleActivator(LogicalKeyboardKey.arrowRight): _next,
           const SingleActivator(LogicalKeyboardKey.arrowLeft): _previous,
           const SingleActivator(LogicalKeyboardKey.space): _flip,
+          const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.maybePop(context),
+          const SingleActivator(LogicalKeyboardKey.home): _first,
+          const SingleActivator(LogicalKeyboardKey.end): _last,
         },
 
         child: Focus(

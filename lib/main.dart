@@ -102,9 +102,8 @@ class MyApp extends ConsumerWidget {
 
 //! Funktionalität
 // signupscreen und loginscreen überarbeiten glaub ist unclean
-// validierung bei alles textfields checken
-// keybinds beim wort hinzufügen und esc beim learnscreen
-// supabase.auth in den provider
+// validierung bei allen textfields checken
+
 // app shell sollte managen wo man ist
 // settings showalreadylearned geht nicht
 

@@ -61,8 +61,9 @@ class BackupService {
     //final labelToId = {for (final l in importedLanguages) l['label'] as String: l['id'] as int};
 
     for (final w in importedWords) {
-      if (!importedLanguages.contains(w['language']))
+      if (!importedLanguages.contains(w['language'])) {
         throw SpecialException(errorMessage: "Was bei den languages ist fehlgeschlagen");
+      }
     }
     // Alles löschen
     await supabase.from('words').delete().neq('id', 0);

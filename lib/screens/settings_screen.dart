@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/provider/auth_provider.dart';
 import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
@@ -38,9 +39,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: const Text("Settings"),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout),
+            icon: const Icon(Icons.logout),
             onPressed: () async {
-              await supabase.auth.signOut();
+              try {
+                await ref.read(authControllerProvider.notifier).signOut();
+              } catch (e) {
+                if (!context.mounted) return;
+                context.showError(e);
+                return;
+              }
+              if (!context.mounted) return;
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => AuthScreen()),
                 (route) => false,

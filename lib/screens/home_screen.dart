@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:voc_trainer/models/language.dart';
@@ -50,63 +51,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await showDialog(
       barrierDismissible: false,
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('New word for ${currentLanguage.label}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              focusNode: myFocusNode,
-              autofocus: true,
-              controller: termController,
-              decoration: const InputDecoration(labelText: 'Term'),
-            ),
-            TextField(
-              controller: definitionController,
-              decoration: const InputDecoration(labelText: 'Definition'),
-            ),
-          ],
-        ),
-        actions: [
-          StatefulBuilder(
-            builder: (context, setState) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          void addWord() {
+            final term = termController.text.trim();
+            final definition = definitionController.text.trim();
+            if (term.isEmpty || definition.isEmpty) return;
+            ref
+                .read(wordStateProvider.notifier)
+                .addWord(Word(term: term, definition: definition, languageId: currentLanguage.id!));
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('New word added')));
+            termController.clear();
+            definitionController.clear();
+            setState(() => alreadyEnteredAWord = true);
+            myFocusNode.requestFocus();
+          }
+
+          return CallbackShortcuts(
+            bindings: {
+              const SingleActivator(LogicalKeyboardKey.escape): () => Navigator.pop(context),
+            },
+            child: AlertDialog(
+              title: Text('New word for ${currentLanguage.label}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(alreadyEnteredAWord ? 'Done' : 'Cancel'),
+                  TextField(
+                    focusNode: myFocusNode,
+                    autofocus: true,
+                    controller: termController,
+                    textInputAction: TextInputAction.next, // Enter springt zur Definition
+                    decoration: const InputDecoration(labelText: 'Term'),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      final term = termController.text.trim();
-                      final definition = definitionController.text.trim();
-                      if (term.isNotEmpty && definition.isNotEmpty) {
-                        ref
-                            .read(wordStateProvider.notifier)
-                            .addWord(
-                              Word(
-                                term: term,
-                                definition: definition,
-                                languageId: currentLanguage.id!,
-                              ),
-                            );
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(const SnackBar(content: Text('Wort hinzugefügt')));
-                        termController.clear();
-                        definitionController.clear();
-                        setState(() => alreadyEnteredAWord = true);
-                        myFocusNode.requestFocus();
-                      }
-                    },
-                    child: const Text('Add word'),
+                  TextField(
+                    controller: definitionController,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => addWord(), // Enter fügt hinzu
+                    decoration: const InputDecoration(labelText: 'Definition'),
                   ),
                 ],
-              );
-            },
-          ),
-        ],
+              ),
+              actionsAlignment: MainAxisAlignment.center,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(alreadyEnteredAWord ? 'Done' : 'Cancel'),
+                ),
+                TextButton(onPressed: addWord, child: const Text('Add word')),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -155,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (selectedLangId == language.id) setState(() => selectedLangId = null);
               Navigator.pop(context);
             },
-            child: const Text('Löschen', style: TextStyle(color: Colors.red)),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -198,9 +195,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await ref.read(wordStateProvider.notifier).reorderLanguages(oldIndex, newIndex);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Reihenfolge konnte nicht gespeichert werden')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error while safing the new order of the languages')),
+      );
     }
   }
 
@@ -256,7 +253,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: TextField(
                       autofocus: true,
                       controller: searchController,
-                      decoration: const InputDecoration(labelText: 'Suche', isDense: true),
+                      decoration: const InputDecoration(labelText: 'Search', isDense: true),
                       onChanged: (_) => setState(() {}),
                     ),
                   ),

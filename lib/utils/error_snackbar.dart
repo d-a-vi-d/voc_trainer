@@ -9,8 +9,8 @@ extension ErrorSnackbar on BuildContext {
       SpecialException() => (e).errorMessage,
       AuthException() => _translateAuthError(e),
       PostgrestException() => _translatePostgrestError((e).code),
-      SocketException() || HttpException() => 'Netzwerkfehler. Prüfe deine Verbindung.',
-      _ => 'Ein unerwarteter Fehler ist aufgetreten.',
+      SocketException() || HttpException() => 'Network error. Please check your connection.',
+      _ => 'An unexpected error occurred.',
     };
     debugPrint(e.toString());
     ScaffoldMessenger.of(this).showSnackBar(SnackBar(content: Text(msg)));
@@ -22,37 +22,36 @@ extension ErrorSnackbar on BuildContext {
             m.contains('already exists') ||
             m.contains('already in use') ||
             m.contains('already been registered') =>
-      'Diese E-Mail-Adresse ist bereits vergeben.',
+      'This email address is already taken.',
 
     String m when m.contains('Password should be at least') =>
-      'Das Passwort muss mindestens 6 Zeichen lang sein.',
+      'The password must be at least 6 characters long.',
 
-    String m when m.contains('weak_password') => 'Passwort zu schwach.',
+    String m when m.contains('weak_password') => 'Password is too weak.',
 
     String m when m.contains('New password should be different') =>
-      'Das neue Passwort muss sich vom alten unterscheiden.',
+      'The new password must be different from the old one.',
 
-    String m when m.contains('Email not confirmed') => 'E-Mail wurde noch nicht bestätigt.',
+    String m when m.contains('Email not confirmed') => 'Your email has not been confirmed yet.',
 
-    String m when m.contains('Unable to validate email address') => 'Ungültige E-Mail-Adresse.',
+    String m when m.contains('Unable to validate email address') => 'Invalid email address.',
 
     String m when m.contains('Email address') && m.contains('is invalid') =>
-      'Ungültige E-Mail-Adresse.',
+      'Invalid email address.',
 
     _ => switch (e.statusCode) {
-      '400' => 'Falsche E-Mail oder falsches Passwort.',
-      '422' => 'Ungültige Eingabe.',
-      '429' => 'Zu viele Versuche. Bitte warte kurz.',
-
-      _ => 'Authentifizierungsfehler. Versuche es erneut.',
+      '400' => 'Wrong email or password.',
+      '422' => 'Invalid input.',
+      '429' => 'Too many attempts. Please wait a moment.',
+      _ => 'Authentication error. Please try again.',
     },
   };
 
   String _translatePostgrestError(String? code) => switch (code) {
-    'P0001' => 'Aktion nicht erlaubt.',
-    '23505' => 'Dieser Eintrag existiert bereits.',
-    '23503' => 'Referenzierter Eintrag existiert nicht.',
-    '42501' => 'Keine Berechtigung für diese Aktion.',
-    _ => 'Ein Datenbankfehler ist aufgetreten.',
+    'P0001' => 'Action not allowed.',
+    '23505' => 'This entry already exists.',
+    '23503' => 'The referenced entry does not exist.',
+    '42501' => 'You do not have permission for this action.',
+    _ => 'A database error occurred.',
   };
 }

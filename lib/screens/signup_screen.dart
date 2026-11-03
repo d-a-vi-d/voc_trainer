@@ -1,23 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:voc_trainer/main.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/provider/auth_provider.dart';
 import 'package:voc_trainer/screens/login_screen.dart';
+import 'package:voc_trainer/utils/auth_validators.dart';
+import 'package:voc_trainer/utils/error_snackbar.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool hiddenPassword = true;
   final _formKey = GlobalKey<FormState>();
+  bool hiddenPassword = true;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    // Enter umgeht den deaktivierten Button, deshalb hier nochmal prüfen.
+    if (ref.read(authControllerProvider).isLoading) return;
+    if (!_formKey.currentState!.validate()) return;
+
+    final email = emailController.text.trim();
+    try {
+      await ref
+          .read(authControllerProvider.notifier)
+          .signUp(email: email, password: passwordController.text);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Signed up: $email')));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+    } catch (e) {
+      if (!mounted) return;
+      context.showError(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authControllerProvider).isLoading;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -38,43 +68,32 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextFormField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-
-                    decoration: InputDecoration(labelText: "email", border: OutlineInputBorder()),
-                    validator: (value) {
-                      final v = value?.trim() ?? '';
-                      if (!v.contains('@') || !v.contains('.')) {
-                        return 'Not a valid email';
-                      }
-                      return null;
-                    },
+                    decoration: const InputDecoration(
+                      labelText: "email",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: validateEmail,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: passwordController,
                     obscureText: hiddenPassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-
                     decoration: InputDecoration(
                       labelText: "password",
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            hiddenPassword = !hiddenPassword;
-                          });
-                        },
+                        onPressed: () => setState(() => hiddenPassword = !hiddenPassword),
                         icon: Icon(hiddenPassword ? Icons.visibility_off : Icons.visibility),
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.length < 6) {
-                        return 'At least 6 characters';
-                      }
-                      return null;
-                    },
+                    validator: validateNewPassword,
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   SizedBox(
                     width: double.maxFinite,
                     child: ElevatedButton(
@@ -85,33 +104,10 @@ class _SignupScreenState extends State<SignupScreen> {
                           borderRadius: BorderRadiusGeometry.circular(10),
                         ),
                       ),
-                      onPressed: () async {
-                        if (!_formKey.currentState!.validate()) return;
-                        final sm = ScaffoldMessenger.of(context);
-                        try {
-                          final authResponse = await supabase.auth.signUp(
-                            password: passwordController.text,
-                            email: emailController.text,
-                          );
-                          if (authResponse.user != null) {
-                            sm.showSnackBar(
-                              SnackBar(content: Text("Signed Up: ${authResponse.user!.email!}")),
-                            ); //success
-                            Navigator.of(
-                              context,
-                            ).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
-                          } else {
-                            sm.showSnackBar(SnackBar(content: Text("An unknown Error occured")));
-                          }
-                        } on AuthException catch (e) {
-                          sm.showSnackBar(SnackBar(content: Text(e.message)));
-                        } catch (e) {
-                          sm.showSnackBar(SnackBar(content: Text("Error:$e")));
-                        }
-                      },
-                      child: Text(
+                      onPressed: isLoading ? null : _submit,
+                      child: const Text(
                         "Signup",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -119,15 +115,14 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
-
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text("Already have an account?", style: TextStyle(fontSize: 14)),
-                      SizedBox(width: 5),
+                      const Text("Already have an account?", style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 5),
                       GestureDetector(
-                        child: Text(
+                        child: const Text(
                           "Login here",
                           style: TextStyle(
                             fontSize: 16,
@@ -139,7 +134,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => LoginScreen()),
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
                           );
                         },
                       ),
