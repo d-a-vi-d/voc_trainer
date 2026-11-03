@@ -20,11 +20,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
-    final darkMode = settingsAsync.requireValue.darkMode;
 
     if (settingsAsync.isLoading || !settingsAsync.hasValue) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    final darkMode = settingsAsync.requireValue.darkMode;
 
     if (settingsAsync.hasError) {
       return const Scaffold(body: Center(child: Text("Error while loading settings")));
@@ -49,202 +49,204 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ],
       ),
-      body: Container(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 50),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Design",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text(context),
-                letterSpacing: 0.5,
+      body: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 50),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Design",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text(context),
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                MenuButton(
-                  onTap: () async {
-                    try {
-                      await ref.read(settingsProvider.notifier).setDarkMode(false);
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      context.showError(e);
-                    }
-                  },
-                  selected: !darkMode,
-                  text: "Bright",
-                ),
-                MenuButton(
-                  onTap: () async {
-                    try {
-                      await ref.read(settingsProvider.notifier).setDarkMode(true);
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      context.showError(e);
-                    }
-                  },
-                  selected: darkMode,
-                  text: "Dark",
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-            Text(
-              "Show already learned?",
-              style: TextStyle(
-                fontSize: 20, // Größerer Text
-                fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
-                color: AppColors.text(context),
-                letterSpacing: 0.5, // Leichter Buchstabenabstand
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  MenuButton(
+                    onTap: () async {
+                      try {
+                        await ref.read(settingsProvider.notifier).setDarkMode(false);
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        context.showError(e);
+                      }
+                    },
+                    selected: !darkMode,
+                    text: "Bright",
+                  ),
+                  MenuButton(
+                    onTap: () async {
+                      try {
+                        await ref.read(settingsProvider.notifier).setDarkMode(true);
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        context.showError(e);
+                      }
+                    },
+                    selected: darkMode,
+                    text: "Dark",
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 6), // Mehr Abstand zwischen Text und Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //show all words button
-                MenuButton(
-                  onTap: () {
-                    // setState(() {
-                    //   showOnlyNotLearned = false;
-                    // });
-                    ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
-                  },
-                  selected: showAlreadyLearned,
-                  // selected: ref.read(settingsProvider.notifier).value
-                  text: "yesss",
+              const SizedBox(height: 30),
+              Text(
+                "Show already learned?",
+                style: TextStyle(
+                  fontSize: 20, // Größerer Text
+                  fontWeight: FontWeight.bold, // Fett für bessere Lesbarkeit
+                  color: AppColors.text(context),
+                  letterSpacing: 0.5, // Leichter Buchstabenabstand
                 ),
-                //only show new words button
-                MenuButton(
-                  onTap: () {
-                    // setState(() {
-                    //   showOnlyNotLearned = true;
-                    // });
-                    ref.read(settingsProvider.notifier).setShowAlreadyLearned(false);
-                  },
-                  selected: !showAlreadyLearned,
-                  text: "nooo",
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
+              ),
+              const SizedBox(height: 6), // Mehr Abstand zwischen Text und Buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //show all words button
+                  MenuButton(
+                    onTap: () {
+                      // setState(() {
+                      //   showOnlyNotLearned = false;
+                      // });
+                      ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
+                    },
+                    selected: showAlreadyLearned,
+                    // selected: ref.read(settingsProvider.notifier).value
+                    text: "yesss",
+                  ),
+                  //only show new words button
+                  MenuButton(
+                    onTap: () {
+                      // setState(() {
+                      //   showOnlyNotLearned = true;
+                      // });
+                      ref.read(settingsProvider.notifier).setShowAlreadyLearned(false);
+                    },
+                    selected: !showAlreadyLearned,
+                    text: "nooo",
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
 
-            Text(
-              "Which language first?",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text(context),
-                letterSpacing: 0.5,
+              Text(
+                "Which language first?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text(context),
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //show home language first
-                MenuButton(
-                  onTap: () {
-                    // setState(() {
-                    //   currentLanguageMode = LanguageMode.HomeLanguageFirst;
-                    // });
-                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.home);
-                  },
-                  selected: languageMode == LanguageMode.home,
-                  text: "home",
-                ),
-                //show foreign language first
-                MenuButton(
-                  onTap: () {
-                    // setState(() {
-                    //   currentLanguageMode = LanguageMode.ForeignLanguageFirst;
-                    // });
-                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.foreign);
-                  },
-                  selected: languageMode == LanguageMode.foreign,
-                  text: "foreign",
-                ),
-                //random language first
-                MenuButton(
-                  onTap: () {
-                    // setState(() {
-                    //   currentLanguageMode = LanguageMode.RandomLanguageFirst;
-                    // });
-                    ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.random);
-                  },
-                  selected: languageMode == LanguageMode.random,
-                  text: "random",
-                ),
-              ],
-            ),
-            const SizedBox(height: 30), // Abstand zu vorherigen Einstellungen
-            Text(
-              "Backup",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text(context),
-                letterSpacing: 0.5,
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //show home language first
+                  MenuButton(
+                    onTap: () {
+                      // setState(() {
+                      //   currentLanguageMode = LanguageMode.HomeLanguageFirst;
+                      // });
+                      ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.home);
+                    },
+                    selected: languageMode == LanguageMode.home,
+                    text: "home",
+                  ),
+                  //show foreign language first
+                  MenuButton(
+                    onTap: () {
+                      // setState(() {
+                      //   currentLanguageMode = LanguageMode.ForeignLanguageFirst;
+                      // });
+                      ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.foreign);
+                    },
+                    selected: languageMode == LanguageMode.foreign,
+                    text: "foreign",
+                  ),
+                  //random language first
+                  MenuButton(
+                    onTap: () {
+                      // setState(() {
+                      //   currentLanguageMode = LanguageMode.RandomLanguageFirst;
+                      // });
+                      ref.read(settingsProvider.notifier).setLanguageMode(LanguageMode.random);
+                    },
+                    selected: languageMode == LanguageMode.random,
+                    text: "random",
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Backup erstellen
-                MenuButton(
-                  onTap: () async {
-                    try {
-                      final saved = await BackupService.exportBackup(
-                        ref.read(wordStateProvider).requireValue,
-                      );
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            saved ? "Backup successfully created!" : "Backup cancelled",
+              const SizedBox(height: 30), // Abstand zu vorherigen Einstellungen
+              Text(
+                "Backup",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text(context),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Backup erstellen
+                  MenuButton(
+                    onTap: () async {
+                      try {
+                        final saved = await BackupService.exportBackup(
+                          ref.read(wordStateProvider).requireValue,
+                        );
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              saved ? "Backup successfully created!" : "Backup cancelled",
+                            ),
                           ),
-                        ),
-                      );
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      context.showError(e);
-                    }
-                  },
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        context.showError(e);
+                      }
+                    },
 
-                  text: "Create",
-                ),
-                const SizedBox(width: 10),
-                // Backup laden
-                MenuButton(
-                  onTap: () async {
-                    try {
-                      final loaded = await BackupService.importBackup(ref);
-                      if (!context.mounted) return;
+                    text: "Create",
+                  ),
+                  const SizedBox(width: 10),
+                  // Backup laden
+                  MenuButton(
+                    onTap: () async {
+                      try {
+                        final loaded = await BackupService.importBackup(ref);
+                        if (!context.mounted) return;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            loaded ? "Backup succesfully loaded!" : "Loading cancelled",
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              loaded ? "Backup succesfully loaded!" : "Loading cancelled",
+                            ),
                           ),
-                        ),
-                      );
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      context.showError(e);
-                    }
-                  },
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        context.showError(e);
+                      }
+                    },
 
-                  text: "Load",
-                ),
-              ],
-            ),
-          ],
+                    text: "Load",
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

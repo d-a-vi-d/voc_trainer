@@ -106,6 +106,7 @@ class MyApp extends ConsumerWidget {
 // supabase.auth in den provider
 // app shell sollte managen wo man ist
 // mehrzeiligen text im learnmode zentrieren
+// settings showalreadylearned geht nicht
 
 //! Features
 // Marker für Wörter (!)

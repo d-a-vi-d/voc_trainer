@@ -298,24 +298,30 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                         ),
                       ),
                       const SizedBox(height: 50),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 400),
-                        child: ElevatedButton(
-                          key: ValueKey(
-                            showHomeLanguage ? currentWord!.definition : currentWord!.term,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          child: ElevatedButton(
+                            key: ValueKey(
+                              showHomeLanguage ? currentWord!.definition : currentWord!.term,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(220, 100),
+                              textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                              elevation: 4,
+                            ),
+                            onPressed: _flip,
+                            // onPressed: () {
+                            //   setState(() {
+                            //     showHomeLanguage = !showHomeLanguage;
+                            //   });
+                            // },
+                            child: Text(
+                              showHomeLanguage ? currentWord.definition : currentWord.term,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(220, 100),
-                            textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                            elevation: 4,
-                          ),
-                          onPressed: _flip,
-                          // onPressed: () {
-                          //   setState(() {
-                          //     showHomeLanguage = !showHomeLanguage;
-                          //   });
-                          // },
-                          child: Text(showHomeLanguage ? currentWord.definition : currentWord.term),
                         ),
                       ),
                       const SizedBox(height: 32),
