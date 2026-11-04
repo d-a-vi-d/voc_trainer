@@ -11,14 +11,14 @@ String? validateEmail(String? value) {
 
 /// Login: only check that something was entered. Supabase decides if it is correct.
 String? validateLoginPassword(String? value) {
-  if (value == null || value.isEmpty) return 'Please enter your Pasword.';
+  if (value == null || value.isEmpty) return 'Please enter your Password.';
   return null;
 }
 
 /// Signup: minimum length (Supabase default is 6).
 String? validateNewPassword(String? value) {
   if (value == null || value.length < _minPasswordLength) {
-    return 'The Pasword must be at least $_minPasswordLength characters long.';
+    return 'The Password must be at least $_minPasswordLength characters long.';
   }
   return null;
 }

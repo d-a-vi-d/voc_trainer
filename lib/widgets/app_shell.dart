@@ -50,8 +50,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     final userAsync = ref.watch(authProvider);
     final wordStateAsync = ref.watch(wordStateProvider);
 
-    if (userAsync.isLoading)
+    if (userAsync.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (userAsync.value?.session == null) return const AuthScreen();
 
     if (wordStateAsync.hasError) {

@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onFieldSubmitted: (_) => _submit(),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     decoration: InputDecoration(
-                      labelText: "Pasword",
+                      labelText: "Password",
                       border: const OutlineInputBorder(),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => hiddenPassword = !hiddenPassword),
@@ -97,23 +97,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
-                    width: double.maxFinite,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    width: double.infinity,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
                         backgroundColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(10),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: isLoading ? null : _submit,
                       child: const Text(
-                        "Login",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                        'Login',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -121,25 +115,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Text("Do not have an account yet?", style: TextStyle(fontSize: 14)),
-                      const SizedBox(width: 5),
-
-                      GestureDetector(
-                        child: const Text(
-                          "Signup here",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                            letterSpacing: -1,
-                          ),
+                      const Text("Don't have an account yet?"),
+                      TextButton(
+                        onPressed: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SignupScreen()),
                         ),
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SignupScreen()),
-                          );
-                        },
+                        child: const Text('Sign up'),
                       ),
                     ],
                   ),

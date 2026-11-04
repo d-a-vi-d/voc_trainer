@@ -101,7 +101,14 @@ class MyApp extends ConsumerWidget {
 
 
 //! Funktionalität
-// signupscreen und loginscreen überarbeiten glaub ist unclean
+// https://claude.ai/chat/f16a70b3-7c5d-434c-a29b-1506e88b1cc7
+// signupscreen und loginscreen zu authscreen 
+// appshell neu
+// auth provider signout 
+// settings screen logout ändern
+
+// manuelles navigieren nach login raus
+// wordstateprovider ausgeloggt nicht beachten
 // validierung bei allen textfields checken
 
 // app shell sollte managen wo man ist

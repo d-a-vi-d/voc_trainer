@@ -37,5 +37,6 @@ class Word {
       definition == other.definition &&
       language == other.language;
 
+  @override
   int get hashCode => Object.hash(term, definition, language);
 }

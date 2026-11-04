@@ -8,7 +8,6 @@ import 'package:voc_trainer/utils/auth_screen.dart';
 import 'package:voc_trainer/utils/error_snackbar.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../services/backup_service.dart';
-import 'package:voc_trainer/main.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -49,6 +48,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 return;
               }
               if (!context.mounted) return;
+              //TODO poppen weil die appshell es eh macht
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => AuthScreen()),
                 (route) => false,
