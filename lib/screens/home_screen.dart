@@ -27,6 +27,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ersetzt: int selectedLangIndex = 0;
   int? selectedLangId;
 
+  List<Word> _markedFirst(List<Word> words) => [
+    ...words.where((w) => w.marked),
+    ...words.where((w) => !w.marked),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -237,9 +242,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           (l) => selectedLangId != null && l.id == selectedLangId,
           orElse: () => state.languages.first,
         );
-        final words = searchMode
-            ? _getWordsForSearch(state.words, currentLanguage, searchController.text)
-            : state.words.where((w) => w.languageId == currentLanguage.id).toList();
+
+        final filteredWords = _markedFirst(
+          searchMode
+              ? _getWordsForSearch(state.words, currentLanguage, searchController.text)
+              : state.words.where((w) => w.languageId == currentLanguage.id).toList(),
+        );
+        // Markierte nach oben, die Reihenfolge innerhalb beider Gruppen bleibt gleich
+        final words = [
+          ...filteredWords.where((w) => w.marked),
+          ...filteredWords.where((w) => !w.marked),
+        ];
+
+        // final words = searchMode
+        //     ? _getWordsForSearch(state.words, currentLanguage, searchController.text)
+        //     : state.words.where((w) => w.languageId == currentLanguage.id).toList();
 
         return Scaffold(
           appBar: AppBar(

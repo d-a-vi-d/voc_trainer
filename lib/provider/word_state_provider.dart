@@ -85,6 +85,7 @@ class WordStateNotifier extends _$WordStateNotifier {
                   definition: definition,
                   languageId: w.languageId,
                   learned: w.learned,
+                  marked: w.marked,
                   languages: w.languages,
                 )
               : w,
@@ -107,7 +108,7 @@ class WordStateNotifier extends _$WordStateNotifier {
     // 1. State sofort updaten
     state = AsyncData(
       WordState(
-        words: previous.words.where((w) => w != word).toList(),
+        words: previous.words.where((w) => w.id != word.id).toList(),
         languages: previous.languages,
       ),
     );
@@ -235,23 +236,28 @@ class WordStateNotifier extends _$WordStateNotifier {
 
   Future<void> toggleLearned(Word word) async {
     final previous = state.requireValue;
+    final learned = !word.learned;
     final updated = previous.words
-        .map(
-          (w) => w == word
-              ? Word(
-                  id: w.id,
-                  term: w.term,
-                  definition: w.definition,
-                  languageId: w.languageId,
-                  learned: !w.learned,
-                  languages: w.languages,
-                )
-              : w,
-        )
+        .map((w) => w.id == word.id ? w.copyWith(learned: learned) : w)
         .toList();
     state = AsyncData(WordState(words: updated, languages: previous.languages));
     try {
-      await supabase.from('words').update({'learned': !word.learned}).eq('id', word.id!);
+      await supabase.from('words').update({'learned': learned}).eq('id', word.id!);
+    } catch (e) {
+      state = AsyncData(previous);
+      rethrow;
+    }
+  }
+
+  Future<void> toggleMarked(Word word) async {
+    final previous = state.requireValue;
+    final marked = !word.marked;
+    final updated = previous.words
+        .map((w) => w.id == word.id ? w.copyWith(marked: marked) : w)
+        .toList();
+    state = AsyncData(WordState(words: updated, languages: previous.languages));
+    try {
+      await supabase.from('words').update({'marked': marked}).eq('id', word.id!);
     } catch (e) {
       state = AsyncData(previous);
       rethrow;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/models/word_state.dart';
 import '../models/word.dart';
 import '../provider/word_state_provider.dart';
 import '../utils/error_snackbar.dart';
@@ -18,6 +19,14 @@ class WordTile extends ConsumerWidget {
   Future<void> _toggleLearned(WidgetRef ref, BuildContext context) async {
     try {
       await ref.read(wordStateProvider.notifier).toggleLearned(word);
+    } catch (e) {
+      if (context.mounted) context.showError(e);
+    }
+  }
+
+  Future<void> _toggleMarked(WidgetRef ref, BuildContext context) async {
+    try {
+      await ref.read(wordStateProvider.notifier).toggleMarked(word);
     } catch (e) {
       if (context.mounted) context.showError(e);
     }
@@ -53,6 +62,17 @@ class WordTile extends ConsumerWidget {
                   ],
                 ),
               ),
+              //TODO
+              if (word.marked)
+                IconButton(
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(_iconButtonSize, _iconButtonSize),
+                  ),
+
+                  icon: const Icon(Icons.error_rounded, color: Colors.red),
+
+                  onPressed: () => _toggleMarked(ref, context),
+                ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -102,6 +122,20 @@ class _EditWordDialogState extends ConsumerState<_EditWordDialog> {
   late final TextEditingController termController;
   late final TextEditingController definitionController;
 
+  // Das aktuelle Wort aus dem State, widget.word ist nur der Stand beim Öffnen
+  Word _find(WordState s) =>
+      s.words.firstWhere((w) => w.id == widget.word.id, orElse: () => widget.word);
+
+  Future<void> _toggleMarked() async {
+    try {
+      await ref
+          .read(wordStateProvider.notifier)
+          .toggleMarked(_find(ref.read(wordStateProvider).requireValue));
+    } catch (e) {
+      if (mounted) context.showError(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -146,12 +180,20 @@ class _EditWordDialogState extends ConsumerState<_EditWordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final word = _find(ref.watch(wordStateProvider).requireValue);
     return AlertDialog(
       title: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
           Expanded(child: Text('Edit word: \n${widget.word.definition}')),
+          IconButton(
+            onPressed: _toggleMarked,
+            icon: Icon(
+              word.marked ? Icons.error_rounded : Icons.error_outline_rounded,
+              color: word.marked ? Colors.red : Colors.grey,
+            ),
+          ),
           IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.close)),
         ],
       ),

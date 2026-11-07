@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
+import 'package:voc_trainer/utils/error_snackbar.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
 import '../models/word.dart';
 import 'package:linear_progress_bar/linear_progress_bar.dart';
@@ -126,20 +127,52 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     setState(() => showHomeLanguage = !showHomeLanguage);
   }
 
-  void _toggleLearned() {
-    final word = shuffledWords[currentIndex];
-    ref.read(wordStateProvider.notifier).toggleLearned(word);
-    // lokal updaten damit der Button sofort reagiert
-    setState(() {
-      shuffledWords[currentIndex] = Word(
-        id: word.id,
-        term: word.term,
-        definition: word.definition,
-        languageId: word.languageId,
-        learned: !word.learned,
-        languages: word.languages,
-      );
-    });
+  // void _toggleLearned() {
+  //   final word = shuffledWords[currentIndex];
+  //   ref.read(wordStateProvider.notifier).toggleLearned(word);
+  //   // lokal updaten damit der Button sofort reagiert
+  //   setState(() {
+  //     // shuffledWords[currentIndex] = Word(
+  //     //   id: word.id,
+  //     //   term: word.term,
+  //     //   definition: word.definition,
+  //     //   languageId: word.languageId,
+  //     //   learned: !word.learned,
+  //     //   marked: word.marked,
+  //     //   languages: word.languages,
+  //     // );
+  //     shuffledWords[currentIndex] = word.copyWith(learned: !word.learned);
+  //   });
+  // }
+
+  Future<void> _toggleLearned() async {
+    final index = currentIndex; // merken, der Nutzer kann während des Awaits weiterblättern
+    final word = shuffledWords[index];
+    setState(() => shuffledWords[index] = word.copyWith(learned: !word.learned));
+    try {
+      await ref.read(wordStateProvider.notifier).toggleLearned(word);
+    } catch (e) {
+      if (!mounted) return;
+      if (index < shuffledWords.length && shuffledWords[index].id == word.id) {
+        setState(() => shuffledWords[index] = word);
+      }
+      context.showError(e);
+    }
+  }
+
+  Future<void> _toggleMarked() async {
+    final index = currentIndex; // merken, der Nutzer kann während des Awaits weiterblättern
+    final word = shuffledWords[index];
+    setState(() => shuffledWords[index] = word.copyWith(marked: !word.marked));
+    try {
+      await ref.read(wordStateProvider.notifier).toggleMarked(word);
+    } catch (e) {
+      if (!mounted) return;
+      if (index < shuffledWords.length && shuffledWords[index].id == word.id) {
+        setState(() => shuffledWords[index] = word);
+      }
+      context.showError(e);
+    }
   }
 
   @override
@@ -300,75 +333,96 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
           autofocus: true,
           child: shuffledWords.isEmpty
               ? const Center(child: Text('No words found.'))
-              : Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: LinearProgressBar(
-                          minHeight: 20,
-                          maxSteps: shuffledWords.length,
-                          progressType: LinearProgressBar.progressTypeLinear, // Use Linear progress
-                          currentStep: currentIndex,
-                          progressColor: Colors.green,
-                          backgroundColor: const Color.fromARGB(255, 208, 208, 208),
-                          borderRadius: BorderRadius.circular(50), //  NEW
-                        ),
-                      ),
-                      const SizedBox(height: 50),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          child: ElevatedButton(
-                            key: ValueKey(
-                              showHomeLanguage ? currentWord!.definition : currentWord!.term,
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(220, 100),
-                              textStyle: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                              elevation: 4,
-                            ),
-                            onPressed: _flip,
-                            // onPressed: () {
-                            //   setState(() {
-                            //     showHomeLanguage = !showHomeLanguage;
-                            //   });
-                            // },
-                            child: Text(
-                              showHomeLanguage ? currentWord.definition : currentWord.term,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+              : Stack(
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back, size: 48),
-                            onPressed: _previous,
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              currentWord.learned
-                                  ? Icons.check_circle
-                                  : Icons.radio_button_unchecked,
-                              color: currentWord.learned ? Colors.green : Colors.grey,
-                              size: 48,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: LinearProgressBar(
+                              minHeight: 20,
+                              maxSteps: shuffledWords.length,
+                              progressType:
+                                  LinearProgressBar.progressTypeLinear, // Use Linear progress
+                              currentStep: currentIndex,
+                              progressColor: Colors.green,
+                              backgroundColor: const Color.fromARGB(255, 208, 208, 208),
+                              borderRadius: BorderRadius.circular(50), //  NEW
                             ),
-                            onPressed: _toggleLearned,
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.arrow_forward, size: 48),
-                            onPressed: _next,
+                          const SizedBox(height: 50),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 400),
+                              child: ElevatedButton(
+                                key: ValueKey(
+                                  showHomeLanguage ? currentWord!.definition : currentWord!.term,
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  minimumSize: const Size(220, 100),
+                                  textStyle: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  elevation: 4,
+                                ),
+                                onPressed: _flip,
+                                // onPressed: () {
+                                //   setState(() {
+                                //     showHomeLanguage = !showHomeLanguage;
+                                //   });
+                                // },
+                                child: Text(
+                                  showHomeLanguage ? currentWord.definition : currentWord.term,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back, size: 48),
+                                onPressed: _previous,
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  currentWord.learned
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: currentWord.learned ? Colors.green : Colors.grey,
+                                  size: 48,
+                                ),
+                                onPressed: _toggleLearned,
+                              ),
+
+                              IconButton(
+                                icon: const Icon(Icons.arrow_forward, size: 48),
+                                onPressed: _next,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: Icon(
+                          currentWord.marked ? Icons.error_rounded : Icons.error_outline_rounded,
+                          color: currentWord.marked ? Colors.red : Colors.grey,
+                          size: 24,
+                        ),
+                        onPressed: _toggleMarked,
+                      ),
+                    ),
+                  ],
                 ),
         ),
       ),

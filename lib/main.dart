@@ -112,10 +112,8 @@ class MyApp extends ConsumerWidget {
 // validierung bei allen textfields checken
 
 // app shell sollte managen wo man ist
-// settings showalreadylearned geht nicht
 
 //! Features
-// Marker für Wörter (!)
 // notizen je sprache
 // drittes Feld für Aussprache
 

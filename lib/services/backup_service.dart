@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/models/word_state.dart';
@@ -23,6 +22,7 @@ class BackupService {
               'definition': w.definition,
               'language': w.language,
               'learned': w.learned,
+              'marked': w.marked,
             },
           )
           .toList(),
@@ -31,7 +31,7 @@ class BackupService {
     final bytes = Uint8List.fromList(utf8.encode(jsonEncode(backupData)));
 
     final path = await FilePicker.platform.saveFile(
-      dialogTitle: 'Backup speichern',
+      dialogTitle: 'Save backup',
       fileName: 'word_backup.json',
       bytes: bytes,
     );
@@ -49,11 +49,15 @@ class BackupService {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
+      withData: true,
     );
     if (result == null) return false;
 
-    final content = await File(result.files.single.path!).readAsString();
-    final decoded = jsonDecode(content);
+    final bytes = result.files.single.bytes;
+    if (bytes == null) throw SpecialException(errorMessage: 'Could not read the file.');
+    final decoded = jsonDecode(utf8.decode(bytes));
+    // final content = await File(result.files.single.path!).readAsString();
+    // final decoded = jsonDecode(content);
 
     final importedLanguages = List<String>.from(decoded['languages']);
     final importedWords = List<Map<String, dynamic>>.from(decoded['words']);
@@ -62,7 +66,9 @@ class BackupService {
 
     for (final w in importedWords) {
       if (!importedLanguages.contains(w['language'])) {
-        throw SpecialException(errorMessage: "Was bei den languages ist fehlgeschlagen");
+        throw SpecialException(
+          errorMessage: "Invalid backup file: a word uses an unknown language.",
+        );
       }
     }
     // Alles löschen
@@ -94,6 +100,7 @@ class BackupService {
                     'term': w['term'],
                     'definition': w['definition'],
                     'learned': w['learned'] ?? false,
+                    'marked': w['marked'] ?? false,
                     'language_id': labelToId[w['language']],
                   },
                 )

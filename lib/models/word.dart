@@ -10,6 +10,7 @@ class Word {
   String definition;
   final int languageId;
   bool learned;
+  bool marked;
   @JsonKey(includeToJson: false)
   final Language? languages;
   String get language => languages?.label ?? '';
@@ -20,6 +21,7 @@ class Word {
     required this.definition,
     required this.languageId,
     this.learned = false,
+    this.marked = false,
     this.languages,
   });
 
@@ -29,6 +31,15 @@ class Word {
 
   //crazy code für wörter löschen
   //dafür muss ich bei der quizlet funktion einfach words.remove machen
+  Word copyWith({String? term, String? definition, bool? learned, bool? marked}) => Word(
+    id: id,
+    term: term ?? this.term,
+    definition: definition ?? this.definition,
+    languageId: languageId,
+    learned: learned ?? this.learned,
+    marked: marked ?? this.marked,
+    languages: languages,
+  );
 
   @override
   bool operator ==(Object other) =>
