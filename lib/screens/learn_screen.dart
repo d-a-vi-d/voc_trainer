@@ -45,9 +45,8 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         .read(wordStateProvider)
         .requireValue
         .words
-        //TODO die richtigen wörter laden
         .where((w) => w.languageId == widget.language.id)
-        .where((w) => showAlreadyLearned ? !w.learned : true)
+        .where((w) => showAlreadyLearned ? true : !w.learned)
         .toList();
 
     setState(() {
@@ -216,23 +215,14 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
                             children: [
                               //show all words button
                               MenuButton(
-                                onTap: () {
-                                  ref.read(settingsProvider.notifier).setShowAlreadyLearned(false);
-
-                                  _initLearning();
-                                },
-                                selected: !settings.showAlreadyLearned,
+                                onTap: () => _setShowAlreadyLearned(true),
+                                selected: settings.showAlreadyLearned,
                                 text: "yesss",
                               ),
                               //only show unlearned words button
                               MenuButton(
-                                onTap: () {
-                                  ref.read(settingsProvider.notifier).setShowAlreadyLearned(true);
-
-                                  // showAlreadyLearned = true;
-                                  _initLearning();
-                                },
-                                selected: settings.showAlreadyLearned,
+                                onTap: () => _setShowAlreadyLearned(false),
+                                selected: !settings.showAlreadyLearned,
                                 text: "nooo",
                               ),
                             ],
@@ -412,5 +402,20 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _setShowAlreadyLearned(bool value) async {
+    final current = ref.read(settingsProvider).requireValue.showAlreadyLearned;
+    if (current == value) return; // schon so eingestellt: nichts tun
+
+    try {
+      await ref.read(settingsProvider.notifier).setShowAlreadyLearned(value);
+    } catch (e) {
+      if (!mounted) return;
+      context.showError(e);
+      return;
+    }
+    if (!mounted) return;
+    _initLearning();
   }
 }
