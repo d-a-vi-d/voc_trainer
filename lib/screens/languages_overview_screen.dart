@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/models/language.dart';
+import 'package:voc_trainer/models/word.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
 
@@ -14,7 +15,7 @@ class LanguagesOverviewScreen extends ConsumerStatefulWidget {
 
 class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScreen> {
   bool editMode = false;
-  final Map<int, String> languageNameChanges = {};
+  Map<int, String> languageNameChanges = {};
 
   Future<void> _toggleEditMode() async {
     if (editMode) {
@@ -22,21 +23,24 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
         try {
           await ref.read(wordStateProvider.notifier).renameLanguage(entry.key, entry.value);
         } catch (error) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
         }
       }
       languageNameChanges.clear();
     }
+
     setState(() => editMode = !editMode);
   }
 
-  Widget _buildLanguagetile(int index, List<Language> languages, List words) {
+  Widget _buildLanguagetile(int index, List<Language> languages, List<Word> words) {
     final language = languages[index];
     final wordsForLang = words.where((w) => w.languageId == language.id).toList();
     final learned = wordsForLang.where((w) => w.learned).length;
     final total = wordsForLang.length;
     final progress = total == 0 ? 0.0 : learned / total;
-    final languageController = TextEditingController(text: language.label);
+
+    final lineColor = Theme.of(context).colorScheme.onSurface;
 
     return Container(
       height: 70,
@@ -71,18 +75,24 @@ class _LanguagesOverviewScreenState extends ConsumerState<LanguagesOverviewScree
             Text('$learned / $total', style: const TextStyle(fontSize: 20)),
           ],
           if (editMode) ...[
-            IntrinsicWidth(
-              child: TextField(
-                controller: languageController,
-                decoration: const InputDecoration(hintText: 'Language'),
+            Expanded(
+              child: TextFormField(
+                key: ValueKey(language.id),
+                // controller: languageController,
+                initialValue: language.label,
+                decoration: InputDecoration(
+                  hintText: 'Language',
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: lineColor)),
+                  focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: lineColor)),
+                ),
                 style: const TextStyle(fontSize: 20),
-                onChanged: (val) => languageNameChanges[index] = val,
+                onChanged: (val) => languageNameChanges[language.id!] = val,
               ),
             ),
             IconButton(
               onPressed: () async {
                 await widget.onDeleteLanguage(language);
-                setState(() => editMode = false);
+                // setState(() => editMode = false);
               },
               icon: const Icon(Icons.delete),
               iconSize: 30,

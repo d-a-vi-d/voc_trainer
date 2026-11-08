@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:voc_trainer/provider/auth_provider.dart';
 import 'package:voc_trainer/provider/settings_provider.dart';
-import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
 import 'package:voc_trainer/utils/auth_screen.dart';
 import 'package:voc_trainer/utils/error_snackbar.dart';
 import 'package:voc_trainer/widgets/menu_button.dart';
-import '../services/backup_service.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -191,68 +189,68 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30), // Abstand zu vorherigen Einstellungen
-              Text(
-                "Backup",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text(context),
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Backup erstellen
-                  MenuButton(
-                    onTap: () async {
-                      try {
-                        final saved = await BackupService.exportBackup(
-                          ref.read(wordStateProvider).requireValue,
-                        );
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              saved ? "Backup successfully created!" : "Backup cancelled",
-                            ),
-                          ),
-                        );
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        context.showError(e);
-                      }
-                    },
+              // const SizedBox(height: 30), // Abstand zu vorherigen Einstellungen
+              // Text(
+              //   "Backup",
+              //   style: TextStyle(
+              //     fontSize: 20,
+              //     fontWeight: FontWeight.bold,
+              //     color: AppColors.text(context),
+              //     letterSpacing: 0.5,
+              //   ),
+              // ),
+              // const SizedBox(height: 6),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     // Backup erstellen
+              //     MenuButton(
+              //       onTap: () async {
+              //           try {
+              //             final saved = await BackupService.exportBackup(
+              //               ref.read(wordStateProvider).requireValue,
+              //             );
+              //             if (!context.mounted) return;
+              //             ScaffoldMessenger.of(context).showSnackBar(
+              //               SnackBar(
+              //                 content: Text(
+              //                   saved ? "Backup successfully created!" : "Backup cancelled",
+              //                 ),
+              //               ),
+              //             );
+              //           } catch (e) {
+              //             if (!context.mounted) return;
+              //             context.showError(e);
+              //           }
+              //       },
 
-                    text: "Create",
-                  ),
-                  const SizedBox(width: 10),
-                  // Backup laden
-                  MenuButton(
-                    onTap: () async {
-                      try {
-                        final loaded = await BackupService.importBackup(ref);
-                        if (!context.mounted) return;
+              //       text: "Create",
+              //     ),
+              //     const SizedBox(width: 10),
+              //     // Backup laden
+              //     MenuButton(
+              //       onTap: () async {
+              //         try {
+              //           final loaded = await BackupService.importBackup(ref);
+              //           if (!context.mounted) return;
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              loaded ? "Backup succesfully loaded!" : "Loading cancelled",
-                            ),
-                          ),
-                        );
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        context.showError(e);
-                      }
-                    },
+              //           ScaffoldMessenger.of(context).showSnackBar(
+              //             SnackBar(
+              //               content: Text(
+              //                 loaded ? "Backup succesfully loaded!" : "Loading cancelled",
+              //               ),
+              //             ),
+              //           );
+              //         } catch (e) {
+              //           if (!context.mounted) return;
+              //           context.showError(e);
+              //         }
+              //       },
 
-                    text: "Load",
-                  ),
-                ],
-              ),
+              //       text: "Load",
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

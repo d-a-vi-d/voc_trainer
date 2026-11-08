@@ -113,8 +113,11 @@ class MyApp extends ConsumerWidget {
 
 // app shell sollte managen wo man ist
 
+// settingssheet in eigenes file
+
 //! Features
-// notizen je sprache
+  // showalreadylearned fixen was es wirklich macht
+
 // drittes Feld für Aussprache
 
 // immer Lernbündel

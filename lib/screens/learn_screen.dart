@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/provider/settings_provider.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
@@ -11,7 +12,7 @@ import 'package:linear_progress_bar/linear_progress_bar.dart';
 import 'package:flutter/services.dart';
 
 class LearnScreen extends ConsumerStatefulWidget {
-  final String language;
+  final Language language;
   const LearnScreen({super.key, required this.language});
 
   @override
@@ -36,6 +37,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
   void _initLearning() async {
     // final showAlreadyLearned = ref.read(settingsProvider).value?.showAlreadyLearned ?? false;
     final settingsState = await ref.read(settingsProvider.future);
+    if (!mounted) return;
     final showAlreadyLearned = settingsState.showAlreadyLearned;
 
     _updateShowHomeLanguage();
@@ -43,7 +45,8 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
         .read(wordStateProvider)
         .requireValue
         .words
-        .where((w) => w.language == widget.language)
+        //TODO die richtigen wörter laden
+        .where((w) => w.languageId == widget.language.id)
         .where((w) => showAlreadyLearned ? !w.learned : true)
         .toList();
 
@@ -127,24 +130,6 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     setState(() => showHomeLanguage = !showHomeLanguage);
   }
 
-  // void _toggleLearned() {
-  //   final word = shuffledWords[currentIndex];
-  //   ref.read(wordStateProvider.notifier).toggleLearned(word);
-  //   // lokal updaten damit der Button sofort reagiert
-  //   setState(() {
-  //     // shuffledWords[currentIndex] = Word(
-  //     //   id: word.id,
-  //     //   term: word.term,
-  //     //   definition: word.definition,
-  //     //   languageId: word.languageId,
-  //     //   learned: !word.learned,
-  //     //   marked: word.marked,
-  //     //   languages: word.languages,
-  //     // );
-  //     shuffledWords[currentIndex] = word.copyWith(learned: !word.learned);
-  //   });
-  // }
-
   Future<void> _toggleLearned() async {
     final index = currentIndex; // merken, der Nutzer kann während des Awaits weiterblättern
     final word = shuffledWords[index];
@@ -191,7 +176,7 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Learn: ${widget.language}'),
+        title: Text('Learn: ${widget.language.label}'),
         actions: [
           IconButton(
             icon: Icon(Icons.settings),

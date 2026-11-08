@@ -20,7 +20,7 @@ class BackupService {
             (w) => {
               'term': w.term,
               'definition': w.definition,
-              'language': w.language,
+              'languageId': w.languageId,
               'learned': w.learned,
               'marked': w.marked,
             },

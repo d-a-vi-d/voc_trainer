@@ -13,40 +13,50 @@ part 'word_state_provider.g.dart';
 class WordStateNotifier extends _$WordStateNotifier {
   @override
   Future<WordState> build() async {
-    // Neu laden, sobald sich der eingeloggte User ändert (Login/Logout)
+    // Beobachtet nur die User-ID: Wechselt sie (Login/Logout), läuft build() neu
+    // und alles wird für den neuen User frisch geladen.
     final userId =
         ref.watch(authProvider.select((s) => s.value?.session?.user.id)) ??
         supabase.auth.currentUser?.id;
+
+    // Niemand eingeloggt: gar nicht erst die Datenbank fragen, leerer State.
     if (userId == null) {
       return WordState(words: [], languages: []);
     }
 
+    // 1. Sprachen laden, nur die Spalten id und label.
+    //    Sortiert nach der gespeicherten Reihenfolge (position), bei Gleichstand nach id.
     final languagesRaw = await supabase
         .from('languages')
-        .select('id, label')
+        .select('id, label, notes')
         .order('position', ascending: true)
         .order('id', ascending: true); // Tie-Breaker, damit die Reihenfolge immer eindeutig ist
 
+    // Jede Zeile (eine Map) wird zu einem Language-Objekt.
     final languages = languagesRaw.map((l) => Language.fromJson(l)).toList();
 
-    // final wordsRaw = await supabase.from('words').select('*, languages(label)').limit(10000);
-    // final words = wordsRaw.map((w) => Word.fromJson(w)).toList();
+    // 2. Wörter laden. Supabase liefert pro Anfrage höchstens 1000 Zeilen,
+    //    deshalb holen wir sie in Paketen (Batches) ab und sammeln sie hier.
     List<Map<String, dynamic>> allWordsRaw = [];
     const batchSize = 1000;
-    int offset = 0;
+    int offset = 0; // ab welcher Zeile das nächste Paket beginnt
 
     while (true) {
       final batch = await supabase
           .from('words')
-          .select('*, languages(label)')
-          .order('id', ascending: true)
-          .range(offset, offset + batchSize - 1);
+          // '*' = alle Spalten des Wortes, 'languages(label)' = Join (siehe Erklärung unten)
+          .select('*')
+          // vor language attribut aus Word löschen: .select('*, languages(label)')
+          .order('id', ascending: true) // feste Reihenfolge, sonst könnten Pakete sich überlappen
+          .range(offset, offset + batchSize - 1); // Zeilen offset bis offset+999
 
       allWordsRaw.addAll(batch);
+      // Kam weniger als ein volles Paket zurück, gibt es nichts mehr zu holen.
       if (batch.length < batchSize) break;
       offset += batchSize;
     }
 
+    // Jede Zeile wird zu einem Word-Objekt.
     final words = allWordsRaw.map((w) => Word.fromJson(w)).toList();
 
     return WordState(words: words, languages: languages);
@@ -61,7 +71,8 @@ class WordStateNotifier extends _$WordStateNotifier {
       final response = await supabase
           .from('words')
           .insert(word.toJson())
-          .select('*, languages(label)')
+          .select('*')
+          // vor word.languages Entfernung: .select('*, languages(label)')
           .single();
       final inserted = Word.fromJson(response);
       // 3. Ersetze optimistisches Objekt durch echtes
@@ -77,21 +88,25 @@ class WordStateNotifier extends _$WordStateNotifier {
   Future<void> updateWord(Word word, {required String term, required String definition}) async {
     final previous = state.requireValue;
     final updated = previous.words
-        .map(
-          (w) => w.id == word.id
-              ? Word(
-                  id: w.id,
-                  term: term,
-                  definition: definition,
-                  languageId: w.languageId,
-                  learned: w.learned,
-                  marked: w.marked,
-                  languages: w.languages,
-                )
-              : w,
-        )
+        .map((w) => w.id == word.id ? w.copyWith(term: term, definition: definition) : w)
         .toList();
+    // final updated = previous.words
+    //     .map(
+    //       (w) => w.id == word.id
+    //           ? Word(
+    //               id: w.id,
+    //               term: term,
+    //               definition: definition,
+    //               languageId: w.languageId,
+    //               learned: w.learned,
+    //               marked: w.marked,
+    //               // languages: w.languages,
+    //             )
+    //           : w,
+    //     )
+    //     .toList();
     state = AsyncData(WordState(words: updated, languages: previous.languages));
+
     try {
       await supabase
           .from('words')
@@ -134,7 +149,7 @@ class WordStateNotifier extends _$WordStateNotifier {
         words: previous.words,
         languages: [
           ...previous.languages,
-          Language(label: language),
+          Language(label: language, notes: ""),
         ],
       ),
     );
@@ -143,7 +158,7 @@ class WordStateNotifier extends _$WordStateNotifier {
       final response = await supabase
           .from('languages')
           .insert({'label': language, 'user_id': supabase.auth.currentUser!.id})
-          .select('id, label')
+          .select('id, label, notes')
           .single();
 
       // 3. Ersetze optimistisches Objekt durch echtes
@@ -177,27 +192,33 @@ class WordStateNotifier extends _$WordStateNotifier {
     }
   }
 
-  Future<void> renameLanguage(int index, String newLanguageName) async {
-    //String oldLanguageName = WordService.languages[index];
+  Future<void> renameLanguage(int languageId, String newLanguageName) async {
+    // final previous = state.requireValue;
+
     final previous = await future;
+    final newName = newLanguageName.trim();
 
-    if (newLanguageName.isEmpty) {
-      return;
-    }
-    //checken ob Name existiert
-    //if (WordService.languages.contains(newLanguageName)) {
+    final index = previous.languages.indexWhere((l) => l.id == languageId);
+    if (index == -1) return; // Sprache gibt es nicht (mehr)
 
-    if (previous.languages.any((l) => l.label == newLanguageName)) {
+    final oldLanguage = previous.languages[index];
+
+    if (newName.isEmpty || newName == oldLanguage.label) return;
+
+    if (previous.languages.any((l) => l.label == newName)) {
       throw SpecialException(errorMessage: "There is already a language with this name!");
     }
-    final oldLanguage = previous.languages[index];
+
     final updated = [...previous.languages];
-    updated[index] = Language(id: oldLanguage.id, label: newLanguageName);
-    // 1. State sofort updaten
+    updated[index] = oldLanguage.copyWith(label: newName);
+
+    // final updated = previous.languages
+    //     .map((l) => l.id == oldLanguage.id ? l.copyWith(label: newName) : l)
+    //     .toList();
     state = AsyncData(WordState(words: previous.words, languages: updated));
 
     try {
-      await supabase.from('languages').update({'label': newLanguageName}).eq('id', oldLanguage.id!);
+      await supabase.from('languages').update({'label': newName}).eq('id', oldLanguage.id!);
     } catch (e) {
       state = AsyncData(previous);
       rethrow;
@@ -258,6 +279,28 @@ class WordStateNotifier extends _$WordStateNotifier {
     state = AsyncData(WordState(words: updated, languages: previous.languages));
     try {
       await supabase.from('words').update({'marked': marked}).eq('id', word.id!);
+    } catch (e) {
+      state = AsyncData(previous);
+      rethrow;
+    }
+  }
+
+  Future<void> updateNotes(int languageId, String notes) async {
+    final previous = await future;
+    final newNotes = notes.trim();
+
+    final index = previous.languages.indexWhere((l) => l.id == languageId);
+    if (index == -1) return;
+
+    final oldLanguage = previous.languages[index];
+    if (newNotes == oldLanguage.notes) return; // unverändert: nichts tun
+
+    final updated = [...previous.languages];
+    updated[index] = oldLanguage.copyWith(notes: newNotes);
+    state = AsyncData(WordState(words: previous.words, languages: updated));
+
+    try {
+      await supabase.from('languages').update({'notes': newNotes}).eq('id', languageId);
     } catch (e) {
       state = AsyncData(previous);
       rethrow;

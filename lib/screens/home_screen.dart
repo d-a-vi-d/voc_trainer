@@ -6,6 +6,7 @@ import 'package:voc_trainer/models/language.dart';
 import 'package:voc_trainer/provider/word_state_provider.dart';
 import 'package:voc_trainer/screens/languages_overview_screen.dart';
 import 'package:voc_trainer/utils/app_colors.dart';
+import 'package:voc_trainer/widgets/language_note.dart';
 import 'learn_screen.dart';
 import '../models/word.dart';
 import 'package:voc_trainer/screens/settings_screen.dart';
@@ -313,7 +314,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ElevatedButton(
                   onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage.label)),
+                    MaterialPageRoute(builder: (_) => LearnScreen(language: currentLanguage)),
                   ),
                   child: const Text('Learn'),
                 ),
@@ -322,7 +323,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           body: Column(
             children: [
-              const SizedBox(height: 8),
+              LanguageNote(key: ValueKey(currentLanguage.id), language: currentLanguage),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,

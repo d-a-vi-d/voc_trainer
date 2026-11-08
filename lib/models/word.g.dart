@@ -13,9 +13,6 @@ Word _$WordFromJson(Map<String, dynamic> json) => Word(
   languageId: (json['language_id'] as num).toInt(),
   learned: json['learned'] as bool? ?? false,
   marked: json['marked'] as bool? ?? false,
-  languages: json['languages'] == null
-      ? null
-      : Language.fromJson(json['languages'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$WordToJson(Word instance) => <String, dynamic>{
