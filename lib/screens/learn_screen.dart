@@ -22,6 +22,9 @@ class LearnScreen extends ConsumerStatefulWidget {
 class _LearnScreenState extends ConsumerState<LearnScreen> {
   List<Word> shuffledWords = [];
   int currentIndex = 0;
+  int bundleSize = 10;
+  int bundleNumber = 1;
+  List<int> stageList = [];
 
   late bool showHomeLanguage;
 
@@ -40,7 +43,6 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     if (!mounted) return;
     final showAlreadyLearned = settingsState.showAlreadyLearned;
 
-    _updateShowHomeLanguage();
     final words = ref
         .read(wordStateProvider)
         .requireValue
@@ -52,6 +54,31 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     setState(() {
       shuffledWords = List.from(words)..shuffle();
       currentIndex = 0;
+      bundleNumber = 1;
+    });
+
+    _startBundle(false);
+  }
+
+  void _startBundle(bool nextBundle) {
+    setState(() {
+      currentIndex = 0;
+      // berechnen in welchem bundle man gerade ist
+      if (nextBundle) {
+        bundleNumber = bundleNumber + 1;
+      }
+      int bundleStart = (bundleNumber - 1) * bundleSize;
+      int bundleEnd = min(bundleNumber * bundleSize, shuffledWords.length);
+
+      // gesamtes Bündel nehmen
+      stageList = List.generate(bundleEnd - bundleStart, (i) => i + bundleStart);
+
+      // bei "nur ungelernte" die gelernten rausfiltern - stageList
+      if (!(ref.read(settingsProvider).value?.showAlreadyLearned ?? false)) {
+        stageList = stageList.where((i) => !shuffledWords[i].learned).toList();
+      }
+
+      _updateShowHomeLanguage();
     });
   }
 
@@ -163,12 +190,12 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
   Widget build(BuildContext context) {
     final settingsAsync = ref.watch(settingsProvider);
 
-    if (settingsAsync.isLoading || !settingsAsync.hasValue) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     if (settingsAsync.hasError) {
       return const Scaffold(body: Center(child: Text("Error while loading settings")));
+    }
+
+    if (settingsAsync.isLoading || !settingsAsync.hasValue) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final currentWord = shuffledWords.isNotEmpty ? shuffledWords[currentIndex] : null;
